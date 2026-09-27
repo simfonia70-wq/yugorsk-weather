@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Погода • Семейное табло</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -130,7 +133,7 @@
           <div class="city-name">Югорск</div>
           <div class="city-sub">ХМАО — Югра</div>
         </div>
-        <div class="side-temp" id="side-yugorsk">--°</div>
+        <div class="side-temp" id="side-yugorsk">...</div>
       </div>
 
       <div class="city-btn" onclick="pickCity('ekb', this)">
@@ -138,7 +141,7 @@
           <div class="city-name">Екатеринбург</div>
           <div class="city-sub">Урал</div>
         </div>
-        <div class="side-temp" id="side-ekb">--°</div>
+        <div class="side-temp" id="side-ekb">...</div>
       </div>
 
       <div class="city-btn" onclick="pickCity('nnov', this)">
@@ -146,7 +149,7 @@
           <div class="city-name">Н. Новгород</div>
           <div class="city-sub">Бор</div>
         </div>
-        <div class="side-temp" id="side-nnov">--°</div>
+        <div class="side-temp" id="side-nnov">...</div>
       </div>
 
       <div class="city-btn" onclick="pickCity('msk', this)">
@@ -154,7 +157,7 @@
           <div class="city-name">Москва</div>
           <div class="city-sub">Центр</div>
         </div>
-        <div class="side-temp" id="side-msk">--°</div>
+        <div class="side-temp" id="side-msk">...</div>
       </div>
     </div>
 
@@ -168,8 +171,8 @@
       </div>
 
       <div class="board-center">
-        <div class="big-degrees" id="mainDegree">--°</div>
-        <div class="weather-condition" id="mainCondition">Загрузка...</div>
+        <div class="big-degrees" id="mainDegree">...</div>
+        <div class="weather-condition" id="mainCondition">Получение данных...</div>
       </div>
 
       <div class="board-bottom">
@@ -181,10 +184,10 @@
 
   <script>
     const cities = {
-      yugorsk: { name: "Югорск", region: "ХМАО — Югра", lat: 61.3123, lon: 63.3317, bgDay: "https://images.unsplash.com/photo-1517824806704-9040b037703b?w=1200", bgNight: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200" },
-      ekb: { name: "Екатеринбург", region: "Свердловская область", lat: 56.8389, lon: 60.6057, bgDay: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200", bgNight: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200" },
-      nnov: { name: "Нижний Новгород / Бор", region: "Нижегородская область", lat: 56.3269, lon: 44.0059, bgDay: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", bgNight: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200" },
-      msk: { name: "Москва", region: "Центр", lat: 55.7558, lon: 37.6173, bgDay: "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=1200", bgNight: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200" }
+      yugorsk: { name: "Югорск", region: "ХМАО — Югра", query: "Yugorsk", lat: 61.3123, lon: 63.3317, bgDay: "https://images.unsplash.com/photo-1517824806704-9040b037703b?w=1200", bgNight: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200" },
+      ekb: { name: "Екатеринбург", region: "Свердловская область", query: "Yekaterinburg", lat: 56.8389, lon: 60.6057, bgDay: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200", bgNight: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200" },
+      nnov: { name: "Нижний Новгород / Бор", region: "Нижегородская область", query: "Nizhny Novgorod", lat: 56.3269, lon: 44.0059, bgDay: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", bgNight: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200" },
+      msk: { name: "Москва", region: "Центр", query: "Moscow", lat: 55.7558, lon: 37.6173, bgDay: "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=1200", bgNight: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200" }
     };
 
     let activeKey = 'yugorsk';
@@ -193,17 +196,6 @@
     function isNight() {
       const h = new Date().getHours();
       return (h >= 21 || h < 6);
-    }
-
-    function weatherCodeToText(code) {
-      if (code === 0) return "Ясно ☀️";
-      if (code <= 2) return "Переменная облачность ⛅";
-      if (code === 3) return "Пасмурно ☁️";
-      if (code >= 45 && code <= 48) return "Туман 🌫️";
-      if (code >= 51 && code <= 67) return "Дождь 🌧️";
-      if (code >= 71 && code <= 77) return "Снег ❄️";
-      if (code >= 80 && code <= 82) return "Ливень 🌧️";
-      return "Облачно ☁️";
     }
 
     function updateMainDisplay(cityKey) {
@@ -227,37 +219,48 @@
       updateMainDisplay(cityKey);
     }
 
-    function fetchCity(cityKey) {
+    function setCityData(cityKey, tempText, condText) {
+      dataCache[cityKey] = { temp: tempText, cond: condText };
+      const sideEl = document.getElementById('side-' + cityKey);
+      if (sideEl) sideEl.innerText = tempText;
+
+      if (cityKey === activeKey) {
+        document.getElementById('mainDegree').innerText = tempText;
+        document.getElementById('mainCondition').innerText = condText;
+      }
+    }
+
+    // Загрузка через надежный текстовый шлюз wttr.in
+    function fetchWeatherDirect(cityKey) {
       const c = cities[cityKey];
-      const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon + '&current=temperature_2m,weather_code&timezone=auto';
-
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          const t = Math.round(data.current.temperature_2m);
-          const tempText = (t > 0 ? '+' : '') + t + '°';
-          const condText = weatherCodeToText(data.current.weather_code);
-
-          dataCache[cityKey] = { temp: tempText, cond: condText };
-
-          const sideEl = document.getElementById('side-' + cityKey);
-          if (sideEl) sideEl.innerText = tempText;
-
-          if (cityKey === activeKey) {
-            document.getElementById('mainDegree').innerText = tempText;
-            document.getElementById('mainCondition').innerText = condText;
-          }
+      fetch('https://wttr.in/' + encodeURIComponent(c.query) + '?format=%t;%C&lang=ru')
+        .then(res => res.text())
+        .then(txt => {
+          if (!txt || txt.includes('<html')) throw new Error('Bad response');
+          const parts = txt.trim().split(';');
+          const temp = parts[0] || '--°';
+          const cond = parts[1] || 'Ясно ☀️';
+          setCityData(cityKey, temp, cond);
         })
-        .catch(err => {
-          const sideEl = document.getElementById('side-' + cityKey);
-          if (sideEl) sideEl.innerText = '--°';
+        .catch(() => {
+          // Запасной резервный канал
+          fetch('https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon + '&current=temperature_2m')
+            .then(r => r.json())
+            .then(d => {
+              const t = Math.round(d.current.temperature_2m);
+              const sign = t > 0 ? '+' : '';
+              setCityData(cityKey, sign + t + '°', 'Данные обновлены');
+            })
+            .catch(() => {
+              setCityData(cityKey, '--°', 'Нет связи');
+            });
         });
     }
 
     function init() {
       updateMainDisplay('yugorsk');
       for (const k in cities) {
-        fetchCity(k);
+        fetchWeatherDirect(k);
       }
     }
 
