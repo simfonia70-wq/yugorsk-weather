@@ -20,11 +20,10 @@
       align-items: flex-start;
     }
 
-    /* Полупрозрачная подложка для читаемости на любом фоне */
     .overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(10, 15, 29, 0.78);
+      background: rgba(10, 15, 29, 0.82);
       z-index: 0;
     }
 
@@ -39,16 +38,16 @@
       margin-top: 10px;
     }
 
-    /* Боковая панель быстрых сводок */
+    /* Боковая панель */
     .sidebar {
-      flex: 0 0 280px;
+      flex: 0 0 260px;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
     .side-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: #94a3b8;
       text-transform: uppercase;
@@ -62,7 +61,7 @@
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 18px;
-      padding: 12px 14px;
+      padding: 14px 16px;
       cursor: pointer;
       text-align: left;
       transition: all 0.25s ease;
@@ -77,14 +76,13 @@
     .city-card-btn.active {
       border-color: #38bdf8;
       background: rgba(2, 132, 199, 0.25);
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
     }
 
     .btn-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
     }
 
     .btn-name {
@@ -97,20 +95,16 @@
       padding: 2px 8px;
       border-radius: 10px;
       background: rgba(255, 255, 255, 0.12);
-      color: #cbd5e1;
+      color: #38bdf8;
     }
 
-    /* Компактный мини-фрейм в боковом меню */
-    .mini-frame {
-      width: 100%;
-      height: 70px;
-      border: none;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.92);
-      pointer-events: none; /* чтобы кликалась вся карточка */
+    .btn-desc {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 6px;
     }
 
-    /* Основной экран с подробными датчиками */
+    /* Основной экран */
     .main-content {
       flex: 1;
       display: flex;
@@ -144,43 +138,52 @@
     .city-view.active { display: block; }
 
     .sensor-item {
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 12px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 14px;
       margin-bottom: 14px;
     }
 
     .sensor-top {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 13px;
-      color: #cbd5e1;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #f1f5f9;
     }
+
+    .sensor-link {
+      font-size: 12px;
+      color: #38bdf8;
+      text-decoration: none;
+    }
+    .sensor-link:hover { text-decoration: underline; }
 
     .badge-home {
       color: #4ade80;
       background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.4);
       padding: 2px 8px;
       border-radius: 8px;
       font-weight: 600;
+      font-size: 11px;
+      margin-left: 8px;
     }
 
     .full-frame {
       width: 100%;
-      height: 270px;
+      height: 320px;
       border: none;
       border-radius: 12px;
-      background: rgba(255, 255, 255, 0.95);
+      background: #ffffff;
     }
 
-    /* Адаптив для телефонов */
     @media (max-width: 768px) {
       .layout { flex-direction: column; }
       .sidebar { flex: none; width: 100%; }
-      .mini-frame { height: 60px; }
-      .full-frame { height: 260px; }
+      .full-frame { height: 280px; }
     }
   </style>
 </head>
@@ -188,44 +191,40 @@
   <div class="overlay"></div>
 
   <div class="layout">
-    <!-- БОКОВАЯ ПАНЕЛЬ СВОДОК -->
+    <!-- БОКОВОЕ МЕНЮ -->
     <div class="sidebar">
-      <div class="side-title">Города • Народмон</div>
+      <div class="side-title">Выбор города</div>
 
-      <!-- Югорск -->
       <div class="city-card-btn active" onclick="switchCity('yugorsk', this)">
         <div class="btn-head">
           <span class="btn-name">Югорск</span>
-          <span class="mini-badge">D680</span>
+          <span class="mini-badge">2 датчика</span>
         </div>
-        <iframe class="mini-frame" src="https://narodmon.ru/D680?theme=light"></iframe>
+        <div class="btn-desc">D680 • D3489</div>
       </div>
 
-      <!-- Екатеринбург -->
       <div class="city-card-btn" onclick="switchCity('ekb', this)">
         <div class="btn-head">
           <span class="btn-name">Екатеринбург</span>
-          <span class="mini-badge">D6911</span>
+          <span class="mini-badge">3 датчика</span>
         </div>
-        <iframe class="mini-frame" src="https://narodmon.ru/D6911?theme=light"></iframe>
+        <div class="btn-desc">D6911 • D6637 • D7062</div>
       </div>
 
-      <!-- Нижний Новгород -->
       <div class="city-card-btn" onclick="switchCity('nnov', this)">
         <div class="btn-head">
           <span class="btn-name">Н. Новгород / Бор</span>
-          <span class="mini-badge">D11347</span>
+          <span class="mini-badge">2 датчика</span>
         </div>
-        <iframe class="mini-frame" src="https://narodmon.ru/D11347?theme=light"></iframe>
+        <div class="btn-desc">D11347 • D8590</div>
       </div>
 
-      <!-- Москва -->
       <div class="city-card-btn" onclick="switchCity('msk', this)">
         <div class="btn-head">
           <span class="btn-name">Москва</span>
-          <span class="mini-badge">D2852</span>
+          <span class="mini-badge">3 датчика</span>
         </div>
-        <iframe class="mini-frame" src="https://narodmon.ru/D2852?theme=light"></iframe>
+        <div class="btn-desc">D2852 • D8628 • D10305</div>
       </div>
     </div>
 
@@ -233,7 +232,7 @@
     <div class="main-content">
       <div class="detail-card">
         <div class="detail-header">
-          <div class="detail-city" id="activeCityTitle">Югорск</div>
+          <div class="detail-city" id="activeCityTitle">Югорск • ХМАО</div>
           <div class="detail-time-tag" id="dayNightStatus">Режим: День ☀️</div>
         </div>
 
@@ -241,60 +240,88 @@
         <div id="view-yugorsk" class="city-view active">
           <div class="sensor-item">
             <div class="sensor-top">
-              <span>📍 Домашний термометр (D680)</span>
-              <span class="badge-home">Основной</span>
+              <div>
+                <span>📍 Домашний термометр (D680)</span>
+                <span class="badge-home">Основной</span>
+              </div>
+              <a href="https://narodmon.ru/D680" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
             </div>
-            <iframe class="full-frame" src="https://narodmon.ru/D680?theme=light"></iframe>
+            <iframe class="full-frame" src="https://narodmon.ru/informer/D680?theme=light"></iframe>
           </div>
           <div class="sensor-item">
             <div class="sensor-top">
               <span>📍 Городской резервный (D3489)</span>
+              <a href="https://narodmon.ru/D3489" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
             </div>
-            <iframe class="full-frame" src="https://narodmon.ru/D3489?theme=light"></iframe>
+            <iframe class="full-frame" src="https://narodmon.ru/informer/D3489?theme=light"></iframe>
           </div>
         </div>
 
         <!-- 2. ЕКАТЕРИНБУРГ -->
         <div id="view-ekb" class="city-view">
           <div class="sensor-item">
-            <div class="sensor-top"><span>📍 Датчик D6911</span></div>
-            <iframe class="full-frame" src="https://narodmon.ru/D6911?theme=light"></iframe>
+            <div class="sensor-top">
+              <span>📍 Датчик D6911</span>
+              <a href="https://narodmon.ru/D6911" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
+            </div>
+            <iframe class="full-frame" src="https://narodmon.ru/informer/D6911?theme=light"></iframe>
           </div>
           <div class="sensor-item">
-            <div class="sensor-top"><span>📍 Датчик D6637</span></div>
-            <iframe class="full-frame" src="https://narodmon.ru/D6637?theme=light"></iframe>
+            <div class="sensor-top">
+              <span>📍 Датчик D6637</span>
+              <a href="https://narodmon.ru/D6637" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
+            </div>
+            <iframe class="full-frame" src="https://narodmon.ru/informer/D6637?theme=light"></iframe>
           </div>
           <div class="sensor-item">
-            <div class="sensor-top"><span>📍 Датчик D7062</span></div>
-            <iframe class="full-frame" src="https://narodmon.ru/D7062?theme=light"></iframe>
+            <div class="sensor-top">
+              <span>📍 Датчик D7062</span>
+              <a href="https://narodmon.ru/D7062" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
+            </div>
+            <iframe class="full-frame" src="https://narodmon.ru/informer/D7062?theme=light"></iframe>
           </div>
         </div>
 
         <!-- 3. НИЖНИЙ НОВГОРОД (БОР) -->
         <div id="view-nnov" class="city-view">
           <div class="sensor-item">
-            <div class="sensor-top"><span>📍 Датчик D11347</span></div>
-            <iframe class="full-frame" src="https://narodmon.ru/D11347?theme=light"></iframe>
+            <div class="sensor-top">
+              <span>📍 Датчик D11347</span>
+              <a href="https://narodmon.ru/D11347" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
+            </div>
+            <iframe class="full-frame" src="https://narodmon.ru/informer/D11347?theme=light"></iframe>
           </div>
           <div class="sensor-item">
-            <div class="sensor-top"><span>📍 Датчик D8590</span></div>
-            <iframe class="full-frame" src="https://narodmon.ru/D8590?theme=light"></iframe>
+            <div class="sensor-top">
+              <span>📍 Датчик D8590</span>
+              <a href="https://narodmon.ru/D8590" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
+            </div>
+            <iframe class="full-frame" src="https://narodmon.ru/informer/D8590?theme=light"></iframe>
           </div>
         </div>
 
         <!-- 4. МОСКВА (ЦЕНТР) -->
         <div id="view-msk" class="city-view">
           <div class="sensor-item">
-            <div class="sensor-top"><span>📍 Датчик D2852</span></div>
-            <iframe class="full-frame" src="https://narodmon.ru/D2852?theme=light"></iframe>
+            <div class="sensor-top">
+              <span>📍 Датчик D2852</span>
+              <a href="https://narodmon.ru/D2852" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
+            </div>
+            <iframe class="full-frame" src="https://narodmon.ru/informer/D2852?theme=light"></iframe>
           </div>
           <div class="sensor-item">
-            <div class="sensor-top"><span>📍 Датчик D8628</span></div>
-            <iframe class="full-frame" src="https://narodmon.ru/D8628?theme=light"></iframe>
+            <div class="sensor-top">
+              <span>📍 Датчик D8628</span>
+              <a href="https://narodmon.ru/D8628" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
+            </div>
+            <iframe class="full-frame" src="https://narodmon.ru/informer/D8628?theme=light"></iframe>
           </div>
           <div class="sensor-item">
-            <div class="sensor-top"><span>📍 Датчик D10305</span></div>
-            <iframe class="full-frame" src="https://narodmon.ru/D10305?theme=light"></iframe>
+            <div class="sensor-top">
+              <span>📍 Датчик D10305</span>
+              <a href="https://narodmon.ru/D10305" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
+            </div>
+            <iframe class="full-frame" src="https://narodmon.ru/informer/D10305?theme=light"></iframe>
           </div>
         </div>
 
@@ -303,7 +330,6 @@
   </div>
 
   <script>
-    // Панорамы городов (День / Ночь)
     const cityThemes = {
       yugorsk: {
         title: "Югорск • ХМАО",
@@ -327,8 +353,6 @@
       }
     };
 
-    let currentCity = 'yugorsk';
-
     function isNightTime() {
       const hour = new Date().getHours();
       return (hour >= 21 || hour < 6);
@@ -345,21 +369,15 @@
     }
 
     function switchCity(cityKey, btnElement) {
-      currentCity = cityKey;
-
-      // переключаем кнопки
       document.querySelectorAll('.city-card-btn').forEach(btn => btn.classList.remove('active'));
       btnElement.classList.add('active');
 
-      // переключаем центральный блок
       document.querySelectorAll('.city-view').forEach(view => view.classList.remove('active'));
       document.getElementById('view-' + cityKey).classList.add('active');
 
-      // обновляем фон и заголовок
       applyCityVisuals(cityKey);
     }
 
-    // Инициализация при первой загрузке
     applyCityVisuals('yugorsk');
   </script>
 </body>
