@@ -169,7 +169,7 @@
 
       <div class="board-center">
         <div class="big-degrees" id="mainDegree">...</div>
-        <div class="weather-condition" id="mainCondition">Связь со спутником...</div>
+        <div class="weather-condition" id="mainCondition">Загрузка данных...</div>
       </div>
 
       <div class="board-bottom">
@@ -246,37 +246,60 @@
       }
     }
 
-    function requestWeather(cityKey) {
+    // Загрузка через надежный прокси с CORS-заголовками, который принимает мобильный браузер
+    function loadWeatherData(cityKey) {
       var c = cities[cityKey];
-      var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon + '&current=temperature_2m,weather_code&timezone=auto';
+      var targetUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon + '&current=temperature_2m,weather_code&timezone=auto';
+      
+      // Используем официальный открытый CORS-прокси corsproxy.io, чтобы мобильный Яндекс не резал запрос
+      var proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
 
-      fetch(url)
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-          if (data && data.current) {
-            var t = Math.round(data.current.temperature_2m);
-            applyCityWeather(cityKey, t, data.current.weather_code);
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', proxyUrl, true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              if (data && data.current) {
+                var t = Math.round(data.current.temperature_2m);
+                applyCityWeather(cityKey, t, data.current.weather_code);
+              }
+            } catch(e) {
+              fallbackDirect(cityKey);
+            }
+          } else {
+            fallbackDirect(cityKey);
           }
-        })
-        .catch(function() {
-          // Если сеть мобильного оператора давит open-meteo, подтягиваем с открытого wttr
-          fetch('https://wttr.in/' + encodeURIComponent(c.name) + '?format=j1')
-            .then(function(r) { return r.json(); })
-            .then(function(w) {
-              var t = parseInt(w.current_condition[0].temp_C, 10);
-              applyCityWeather(cityKey, t, 1);
-            })
-            .catch(function() {
-              var el = document.getElementById('side-' + cityKey);
-              if (el && el.innerText === '...') el.innerText = '--°';
-            });
-        });
+        }
+      };
+      xhr.onerror = function() {
+        fallbackDirect(cityKey);
+      };
+      xhr.send();
+    }
+
+    // Резервная попытка напрямую если прокси не нужен
+    function fallbackDirect(cityKey) {
+      var c = cities[cityKey];
+      var directUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon + '&current=temperature_2m,weather_code&timezone=auto';
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', directUrl, true);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          var d = JSON.parse(xhr.responseText);
+          if (d && d.current) {
+            applyCityWeather(cityKey, Math.round(d.current.temperature_2m), d.current.weather_code);
+          }
+        }
+      };
+      xhr.send();
     }
 
     function init() {
       updateMainDisplay('yugorsk');
       for (var k in cities) {
-        requestWeather(k);
+        loadWeatherData(k);
       }
     }
 
