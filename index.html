@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Погода • Семейный информер</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    
+    body {
+      min-height: 100vh;
+      color: #fff;
+      padding: 16px;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      transition: background-image 0.7s ease-in-out;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    /* Полупрозрачная подложка для читаемости на любом фоне */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 15, 29, 0.78);
+      z-index: 0;
+    }
+
+    .layout {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 980px;
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    /* Боковая панель быстрых сводок */
+    .sidebar {
+      flex: 0 0 280px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .side-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 4px;
+    }
+
+    .city-card-btn {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 18px;
+      padding: 12px 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.25s ease;
+      color: #fff;
+    }
+
+    .city-card-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .city-card-btn.active {
+      border-color: #38bdf8;
+      background: rgba(2, 132, 199, 0.25);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .btn-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .mini-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+    }
+
+    /* Компактный мини-фрейм в боковом меню */
+    .mini-frame {
+      width: 100%;
+      height: 70px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.92);
+      pointer-events: none; /* чтобы кликалась вся карточка */
+    }
+
+    /* Основной экран с подробными датчиками */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .detail-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+    }
+
+    .detail-city { font-size: 24px; font-weight: 700; }
+    .detail-time-tag { font-size: 13px; color: #38bdf8; }
+
+    .city-view { display: none; }
+    .city-view.active { display: block; }
+
+    .sensor-item {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .sensor-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    .badge-home {
+      color: #4ade80;
+      background: rgba(34, 197, 94, 0.2);
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .full-frame {
+      width: 100%;
+      height: 270px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    /* Адаптив для телефонов */
+    @media (max-width: 768px) {
+      .layout { flex-direction: column; }
+      .sidebar { flex: none; width: 100%; }
+      .mini-frame { height: 60px; }
+      .full-frame { height: 260px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <div class="layout">
+    <!-- БОКОВАЯ ПАНЕЛЬ СВОДОК -->
+    <div class="sidebar">
+      <div class="side-title">Города • Народмон</div>
+
+      <!-- Югорск -->
+      <div class="city-card-btn active" onclick="switchCity('yugorsk', this)">
+        <div class="btn-head">
+          <span class="btn-name">Югорск</span>
+          <span class="mini-badge">D680</span>
+        </div>
+        <iframe class="mini-frame" src="https://narodmon.ru/D680?theme=light"></iframe>
+      </div>
+
+      <!-- Екатеринбург -->
+      <div class="city-card-btn" onclick="switchCity('ekb', this)">
+        <div class="btn-head">
+          <span class="btn-name">Екатеринбург</span>
+          <span class="mini-badge">D6911</span>
+        </div>
+        <iframe class="mini-frame" src="https://narodmon.ru/D6911?theme=light"></iframe>
+      </div>
+
+      <!-- Нижний Новгород -->
+      <div class="city-card-btn" onclick="switchCity('nnov', this)">
+        <div class="btn-head">
+          <span class="btn-name">Н. Новгород / Бор</span>
+          <span class="mini-badge">D11347</span>
+        </div>
+        <iframe class="mini-frame" src="https://narodmon.ru/D11347?theme=light"></iframe>
+      </div>
+
+      <!-- Москва -->
+      <div class="city-card-btn" onclick="switchCity('msk', this)">
+        <div class="btn-head">
+          <span class="btn-name">Москва</span>
+          <span class="mini-badge">D2852</span>
+        </div>
+        <iframe class="mini-frame" src="https://narodmon.ru/D2852?theme=light"></iframe>
+      </div>
+    </div>
+
+    <!-- ОСНОВНОЙ ЭКРАН -->
+    <div class="main-content">
+      <div class="detail-card">
+        <div class="detail-header">
+          <div class="detail-city" id="activeCityTitle">Югорск</div>
+          <div class="detail-time-tag" id="dayNightStatus">Режим: День ☀️</div>
+        </div>
+
+        <!-- 1. ЮГОРСК -->
+        <div id="view-yugorsk" class="city-view active">
+          <div class="sensor-item">
+            <div class="sensor-top">
+              <span>📍 Домашний термометр (D680)</span>
+              <span class="badge-home">Основной</span>
+            </div>
+            <iframe class="full-frame" src="https://narodmon.ru/D680?theme=light"></iframe>
+          </div>
+          <div class="sensor-item">
+            <div class="sensor-top">
+              <span>📍 Городской резервный (D3489)</span>
+            </div>
+            <iframe class="full-frame" src="https://narodmon.ru/D3489?theme=light"></iframe>
+          </div>
+        </div>
+
+        <!-- 2. ЕКАТЕРИНБУРГ -->
+        <div id="view-ekb" class="city-view">
+          <div class="sensor-item">
+            <div class="sensor-top"><span>📍 Датчик D6911</span></div>
+            <iframe class="full-frame" src="https://narodmon.ru/D6911?theme=light"></iframe>
+          </div>
+          <div class="sensor-item">
+            <div class="sensor-top"><span>📍 Датчик D6637</span></div>
+            <iframe class="full-frame" src="https://narodmon.ru/D6637?theme=light"></iframe>
+          </div>
+          <div class="sensor-item">
+            <div class="sensor-top"><span>📍 Датчик D7062</span></div>
+            <iframe class="full-frame" src="https://narodmon.ru/D7062?theme=light"></iframe>
+          </div>
+        </div>
+
+        <!-- 3. НИЖНИЙ НОВГОРОД (БОР) -->
+        <div id="view-nnov" class="city-view">
+          <div class="sensor-item">
+            <div class="sensor-top"><span>📍 Датчик D11347</span></div>
+            <iframe class="full-frame" src="https://narodmon.ru/D11347?theme=light"></iframe>
+          </div>
+          <div class="sensor-item">
+            <div class="sensor-top"><span>📍 Датчик D8590</span></div>
+            <iframe class="full-frame" src="https://narodmon.ru/D8590?theme=light"></iframe>
+          </div>
+        </div>
+
+        <!-- 4. МОСКВА (ЦЕНТР) -->
+        <div id="view-msk" class="city-view">
+          <div class="sensor-item">
+            <div class="sensor-top"><span>📍 Датчик D2852</span></div>
+            <iframe class="full-frame" src="https://narodmon.ru/D2852?theme=light"></iframe>
+          </div>
+          <div class="sensor-item">
+            <div class="sensor-top"><span>📍 Датчик D8628</span></div>
+            <iframe class="full-frame" src="https://narodmon.ru/D8628?theme=light"></iframe>
+          </div>
+          <div class="sensor-item">
+            <div class="sensor-top"><span>📍 Датчик D10305</span></div>
+            <iframe class="full-frame" src="https://narodmon.ru/D10305?theme=light"></iframe>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Панорамы городов (День / Ночь)
+    const cityThemes = {
+      yugorsk: {
+        title: "Югорск • ХМАО",
+        dayBg: "https://images.unsplash.com/photo-1517824806704-9040b037703b?q=80&w=1600&auto=format&fit=crop",
+        nightBg: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop"
+      },
+      ekb: {
+        title: "Екатеринбург • Урал",
+        dayBg: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1600&auto=format&fit=crop",
+        nightBg: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1600&auto=format&fit=crop"
+      },
+      nnov: {
+        title: "Нижний Новгород (Бор) • Волга",
+        dayBg: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop",
+        nightBg: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1600&auto=format&fit=crop"
+      },
+      msk: {
+        title: "Москва • Центр",
+        dayBg: "https://images.unsplash.com/photo-1513326738677-b964603b136d?q=80&w=1600&auto=format&fit=crop",
+        nightBg: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1600&auto=format&fit=crop"
+      }
+    };
+
+    let currentCity = 'yugorsk';
+
+    function isNightTime() {
+      const hour = new Date().getHours();
+      return (hour >= 21 || hour < 6);
+    }
+
+    function applyCityVisuals(cityKey) {
+      const isNight = isNightTime();
+      const theme = cityThemes[cityKey];
+      const bgUrl = isNight ? theme.nightBg : theme.dayBg;
+      
+      document.body.style.backgroundImage = `url('${bgUrl}')`;
+      document.getElementById('activeCityTitle').innerText = theme.title;
+      document.getElementById('dayNightStatus').innerText = isNight ? 'Режим: Ночь 🌙' : 'Режим: День ☀️';
+    }
+
+    function switchCity(cityKey, btnElement) {
+      currentCity = cityKey;
+
+      // переключаем кнопки
+      document.querySelectorAll('.city-card-btn').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      // переключаем центральный блок
+      document.querySelectorAll('.city-view').forEach(view => view.classList.remove('active'));
+      document.getElementById('view-' + cityKey).classList.add('active');
+
+      // обновляем фон и заголовок
+      applyCityVisuals(cityKey);
+    }
+
+    // Инициализация при первой загрузке
+    applyCityVisuals('yugorsk');
+  </script>
+</body>
+</html>
