@@ -31,27 +31,27 @@
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 980px;
+      max-width: 960px;
       display: flex;
       flex-direction: row;
       gap: 16px;
       margin-top: 10px;
     }
 
-    /* Боковая панель */
+    /* Боковая панель переключения */
     .sidebar {
-      flex: 0 0 260px;
+      flex: 0 0 250px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
 
     .side-title {
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 700;
       color: #94a3b8;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
       padding: 0 4px;
     }
 
@@ -60,29 +60,23 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 18px;
-      padding: 14px 16px;
+      border-radius: 16px;
+      padding: 12px 14px;
       cursor: pointer;
       text-align: left;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
       color: #fff;
     }
 
     .city-card-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.14);
       transform: translateY(-2px);
     }
 
     .city-card-btn.active {
       border-color: #38bdf8;
-      background: rgba(2, 132, 199, 0.25);
+      background: rgba(2, 132, 199, 0.28);
       box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
-    }
-
-    .btn-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
 
     .btn-name {
@@ -90,18 +84,10 @@
       font-weight: 700;
     }
 
-    .mini-badge {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.12);
-      color: #38bdf8;
-    }
-
     .btn-desc {
       font-size: 12px;
       color: #94a3b8;
-      margin-top: 6px;
+      margin-top: 4px;
     }
 
     /* Основной экран */
@@ -127,39 +113,42 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
       padding-bottom: 12px;
     }
 
     .detail-city { font-size: 24px; font-weight: 700; }
-    .detail-time-tag { font-size: 13px; color: #38bdf8; }
+    .detail-time-tag { font-size: 13px; color: #38bdf8; font-weight: 600; }
 
     .city-view { display: none; }
     .city-view.active { display: block; }
 
+    /* Карточки датчиков */
     .sensor-item {
       background: rgba(0, 0, 0, 0.35);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 18px;
-      padding: 14px;
+      padding: 16px;
       margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .sensor-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
-      font-size: 14px;
-      color: #f1f5f9;
     }
 
-    .sensor-link {
-      font-size: 12px;
-      color: #38bdf8;
-      text-decoration: none;
+    .sensor-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .sensor-link:hover { text-decoration: underline; }
 
     .badge-home {
       color: #4ade80;
@@ -169,21 +158,49 @@
       border-radius: 8px;
       font-weight: 600;
       font-size: 11px;
-      margin-left: 8px;
     }
 
-    .full-frame {
-      width: 100%;
-      height: 320px;
-      border: none;
+    .informer-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 12px;
+      min-height: 80px;
+    }
+
+    .informer-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .btn-chart {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(2, 132, 199, 0.3);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      text-decoration: none;
       border-radius: 12px;
-      background: #ffffff;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-chart:hover {
+      background: #0284c7;
+      color: #ffffff;
     }
 
     @media (max-width: 768px) {
       .layout { flex-direction: column; }
       .sidebar { flex: none; width: 100%; }
-      .full-frame { height: 280px; }
+      .detail-card { padding: 16px; }
     }
   </style>
 </head>
@@ -196,34 +213,22 @@
       <div class="side-title">Выбор города</div>
 
       <div class="city-card-btn active" onclick="switchCity('yugorsk', this)">
-        <div class="btn-head">
-          <span class="btn-name">Югорск</span>
-          <span class="mini-badge">2 датчика</span>
-        </div>
+        <div class="btn-name">Югорск</div>
         <div class="btn-desc">D680 • D3489</div>
       </div>
 
       <div class="city-card-btn" onclick="switchCity('ekb', this)">
-        <div class="btn-head">
-          <span class="btn-name">Екатеринбург</span>
-          <span class="mini-badge">3 датчика</span>
-        </div>
+        <div class="btn-name">Екатеринбург</div>
         <div class="btn-desc">D6911 • D6637 • D7062</div>
       </div>
 
       <div class="city-card-btn" onclick="switchCity('nnov', this)">
-        <div class="btn-head">
-          <span class="btn-name">Н. Новгород / Бор</span>
-          <span class="mini-badge">2 датчика</span>
-        </div>
+        <div class="btn-name">Н. Новгород / Бор</div>
         <div class="btn-desc">D11347 • D8590</div>
       </div>
 
       <div class="city-card-btn" onclick="switchCity('msk', this)">
-        <div class="btn-head">
-          <span class="btn-name">Москва</span>
-          <span class="mini-badge">3 датчика</span>
-        </div>
+        <div class="btn-name">Москва</div>
         <div class="btn-desc">D2852 • D8628 • D10305</div>
       </div>
     </div>
@@ -240,88 +245,81 @@
         <div id="view-yugorsk" class="city-view active">
           <div class="sensor-item">
             <div class="sensor-top">
-              <div>
-                <span>📍 Домашний термометр (D680)</span>
+              <div class="sensor-title">
+                📍 Мой термометр (D680)
                 <span class="badge-home">Основной</span>
               </div>
-              <a href="https://narodmon.ru/D680" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
             </div>
-            <iframe class="full-frame" src="https://narodmon.ru/informer/D680?theme=light"></iframe>
+            <div class="informer-box">
+              <img class="informer-img" src="https://narodmon.ru/informer/D680.png" alt="Показания D680">
+            </div>
+            <a href="https://narodmon.ru/D680" target="_blank" class="btn-chart">
+              📊 Открыть график и историю датчика на Народмоне ↗
+            </a>
           </div>
+
           <div class="sensor-item">
             <div class="sensor-top">
-              <span>📍 Городской резервный (D3489)</span>
-              <a href="https://narodmon.ru/D3489" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
+              <div class="sensor-title">📍 Городской резервный (D3489)</div>
             </div>
-            <iframe class="full-frame" src="https://narodmon.ru/informer/D3489?theme=light"></iframe>
+            <div class="informer-box">
+              <img class="informer-img" src="https://narodmon.ru/informer/D3489.png" alt="Показания D3489">
+            </div>
+            <a href="https://narodmon.ru/D3489" target="_blank" class="btn-chart">
+              📊 Открыть график и историю датчика на Народмоне ↗
+            </a>
           </div>
         </div>
 
         <!-- 2. ЕКАТЕРИНБУРГ -->
         <div id="view-ekb" class="city-view">
           <div class="sensor-item">
-            <div class="sensor-top">
-              <span>📍 Датчик D6911</span>
-              <a href="https://narodmon.ru/D6911" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
-            </div>
-            <iframe class="full-frame" src="https://narodmon.ru/informer/D6911?theme=light"></iframe>
+            <div class="sensor-top"><div class="sensor-title">📍 Датчик D6911</div></div>
+            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D6911.png" alt="D6911"></div>
+            <a href="https://narodmon.ru/D6911" target="_blank" class="btn-chart">📊 График D6911 на Народмоне ↗</a>
           </div>
           <div class="sensor-item">
-            <div class="sensor-top">
-              <span>📍 Датчик D6637</span>
-              <a href="https://narodmon.ru/D6637" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
-            </div>
-            <iframe class="full-frame" src="https://narodmon.ru/informer/D6637?theme=light"></iframe>
+            <div class="sensor-top"><div class="sensor-title">📍 Датчик D6637</div></div>
+            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D6637.png" alt="D6637"></div>
+            <a href="https://narodmon.ru/D6637" target="_blank" class="btn-chart">📊 График D6637 на Народмоне ↗</a>
           </div>
           <div class="sensor-item">
-            <div class="sensor-top">
-              <span>📍 Датчик D7062</span>
-              <a href="https://narodmon.ru/D7062" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
-            </div>
-            <iframe class="full-frame" src="https://narodmon.ru/informer/D7062?theme=light"></iframe>
+            <div class="sensor-top"><div class="sensor-title">📍 Датчик D7062</div></div>
+            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D7062.png" alt="D7062"></div>
+            <a href="https://narodmon.ru/D7062" target="_blank" class="btn-chart">📊 График D7062 на Народмоне ↗</a>
           </div>
         </div>
 
         <!-- 3. НИЖНИЙ НОВГОРОД (БОР) -->
         <div id="view-nnov" class="city-view">
           <div class="sensor-item">
-            <div class="sensor-top">
-              <span>📍 Датчик D11347</span>
-              <a href="https://narodmon.ru/D11347" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
-            </div>
-            <iframe class="full-frame" src="https://narodmon.ru/informer/D11347?theme=light"></iframe>
+            <div class="sensor-top"><div class="sensor-title">📍 Датчик D11347</div></div>
+            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D11347.png" alt="D11347"></div>
+            <a href="https://narodmon.ru/D11347" target="_blank" class="btn-chart">📊 График D11347 на Народмоне ↗</a>
           </div>
           <div class="sensor-item">
-            <div class="sensor-top">
-              <span>📍 Датчик D8590</span>
-              <a href="https://narodmon.ru/D8590" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
-            </div>
-            <iframe class="full-frame" src="https://narodmon.ru/informer/D8590?theme=light"></iframe>
+            <div class="sensor-top"><div class="sensor-title">📍 Датчик D8590</div></div>
+            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D8590.png" alt="D8590"></div>
+            <a href="https://narodmon.ru/D8590" target="_blank" class="btn-chart">📊 График D8590 на Народмоне ↗</a>
           </div>
         </div>
 
         <!-- 4. МОСКВА (ЦЕНТР) -->
         <div id="view-msk" class="city-view">
           <div class="sensor-item">
-            <div class="sensor-top">
-              <span>📍 Датчик D2852</span>
-              <a href="https://narodmon.ru/D2852" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
-            </div>
-            <iframe class="full-frame" src="https://narodmon.ru/informer/D2852?theme=light"></iframe>
+            <div class="sensor-top"><div class="sensor-title">📍 Датчик D2852</div></div>
+            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D2852.png" alt="D2852"></div>
+            <a href="https://narodmon.ru/D2852" target="_blank" class="btn-chart">📊 График D2852 на Народмоне ↗</a>
           </div>
           <div class="sensor-item">
-            <div class="sensor-top">
-              <span>📍 Датчик D8628</span>
-              <a href="https://narodmon.ru/D8628" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
-            </div>
-            <iframe class="full-frame" src="https://narodmon.ru/informer/D8628?theme=light"></iframe>
+            <div class="sensor-top"><div class="sensor-title">📍 Датчик D8628</div></div>
+            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D8628.png" alt="D8628"></div>
+            <a href="https://narodmon.ru/D8628" target="_blank" class="btn-chart">📊 График D8628 на Народмоне ↗</a>
           </div>
           <div class="sensor-item">
-            <div class="sensor-top">
-              <span>📍 Датчик D10305</span>
-              <a href="https://narodmon.ru/D10305" target="_blank" class="sensor-link">Открыть на сайте ↗</a>
-            </div>
-            <iframe class="full-frame" src="https://narodmon.ru/informer/D10305?theme=light"></iframe>
+            <div class="sensor-top"><div class="sensor-title">📍 Датчик D10305</div></div>
+            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D10305.png" alt="D10305"></div>
+            <a href="https://narodmon.ru/D10305" target="_blank" class="btn-chart">📊 График D10305 на Народмоне ↗</a>
           </div>
         </div>
 
