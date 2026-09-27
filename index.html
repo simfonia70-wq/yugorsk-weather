@@ -53,6 +53,7 @@
       justify-content: space-between;
       align-items: center;
       color: #fff;
+      transition: all 0.2s ease;
     }
 
     .city-btn.active {
@@ -91,6 +92,7 @@
       background: rgba(56, 189, 248, 0.15);
       padding: 4px 10px;
       border-radius: 10px;
+      font-weight: 600;
     }
 
     .board-center {
@@ -169,7 +171,7 @@
 
       <div class="board-center">
         <div class="big-degrees" id="mainDegree">...</div>
-        <div class="weather-condition" id="mainCondition">Загрузка данных...</div>
+        <div class="weather-condition" id="mainCondition">Загрузка...</div>
       </div>
 
       <div class="board-bottom">
@@ -181,10 +183,10 @@
 
   <script>
     var cities = {
-      yugorsk: { name: "Югорск", region: "ХМАО — Югра", lat: 61.3123, lon: 63.3317, bgDay: "https://images.unsplash.com/photo-1517824806704-9040b037703b?w=1200", bgNight: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200" },
-      ekb: { name: "Екатеринбург", region: "Свердловская область", lat: 56.8389, lon: 60.6057, bgDay: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200", bgNight: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200" },
-      nnov: { name: "Нижний Новгород / Бор", region: "Нижегородская область", lat: 56.3269, lon: 44.0059, bgDay: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", bgNight: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200" },
-      msk: { name: "Москва", region: "Центр", lat: 55.7558, lon: 37.6173, bgDay: "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=1200", bgNight: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200" }
+      yugorsk: { name: "Югорск", region: "ХМАО — Югра", bgDay: "https://images.unsplash.com/photo-1517824806704-9040b037703b?w=1200", bgNight: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200" },
+      ekb: { name: "Екатеринбург", region: "Свердловская область", bgDay: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200", bgNight: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200" },
+      nnov: { name: "Нижний Новгород / Бор", region: "Нижегородская область", bgDay: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", bgNight: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200" },
+      msk: { name: "Москва", region: "Центр", bgDay: "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=1200", bgNight: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200" }
     };
 
     var activeKey = 'yugorsk';
@@ -246,61 +248,27 @@
       }
     }
 
-    // Загрузка через надежный прокси с CORS-заголовками, который принимает мобильный браузер
-    function loadWeatherData(cityKey) {
-      var c = cities[cityKey];
-      var targetUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon + '&current=temperature_2m,weather_code&timezone=auto';
-      
-      // Используем официальный открытый CORS-прокси corsproxy.io, чтобы мобильный Яндекс не резал запрос
-      var proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
-
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', proxyUrl, true);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            try {
-              var data = JSON.parse(xhr.responseText);
-              if (data && data.current) {
-                var t = Math.round(data.current.temperature_2m);
-                applyCityWeather(cityKey, t, data.current.weather_code);
+    // Единственный локальный запрос к нашему собственному файлу
+    function loadLocalWeather() {
+      fetch('weather.json?t=' + Date.now())
+        .then(function(res) { return res.json(); })
+        .then(function(json) {
+          if (json && json.cities) {
+            for (var k in json.cities) {
+              if (cities[k]) {
+                applyCityWeather(k, json.cities[k].temp, json.cities[k].code);
               }
-            } catch(e) {
-              fallbackDirect(cityKey);
             }
-          } else {
-            fallbackDirect(cityKey);
           }
-        }
-      };
-      xhr.onerror = function() {
-        fallbackDirect(cityKey);
-      };
-      xhr.send();
-    }
-
-    // Резервная попытка напрямую если прокси не нужен
-    function fallbackDirect(cityKey) {
-      var c = cities[cityKey];
-      var directUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon + '&current=temperature_2m,weather_code&timezone=auto';
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', directUrl, true);
-      xhr.onload = function() {
-        if (xhr.status === 200) {
-          var d = JSON.parse(xhr.responseText);
-          if (d && d.current) {
-            applyCityWeather(cityKey, Math.round(d.current.temperature_2m), d.current.weather_code);
-          }
-        }
-      };
-      xhr.send();
+        })
+        .catch(function(err) {
+          console.error("Не удалось прочитать weather.json", err);
+        });
     }
 
     function init() {
       updateMainDisplay('yugorsk');
-      for (var k in cities) {
-        loadWeatherData(k);
-      }
+      loadLocalWeather();
     }
 
     init();
