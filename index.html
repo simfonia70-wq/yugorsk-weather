@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Погода • Семейный информер</title>
+  <title>Погода • Семейное табло</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     
@@ -14,16 +14,16 @@
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
-      transition: background-image 0.7s ease-in-out;
+      transition: background-image 0.6s ease-in-out;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
+      align-items: center;
     }
 
     .overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(10, 15, 29, 0.82);
+      background: rgba(11, 17, 33, 0.78);
       z-index: 0;
     }
 
@@ -31,16 +31,15 @@
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 960px;
+      max-width: 820px;
       display: flex;
       flex-direction: row;
       gap: 16px;
-      margin-top: 10px;
     }
 
-    /* Боковая панель переключения */
+    /* Боковая панель со списком городов */
     .sidebar {
-      flex: 0 0 250px;
+      flex: 0 0 260px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -51,156 +50,108 @@
       font-weight: 700;
       color: #94a3b8;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.8px;
       padding: 0 4px;
     }
 
-    .city-card-btn {
+    .city-btn {
       background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 16px;
-      padding: 12px 14px;
+      padding: 14px 16px;
       cursor: pointer;
-      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       transition: all 0.2s ease;
       color: #fff;
     }
 
-    .city-card-btn:hover {
+    .city-btn:hover {
       background: rgba(255, 255, 255, 0.14);
       transform: translateY(-2px);
     }
 
-    .city-card-btn.active {
+    .city-btn.active {
       border-color: #38bdf8;
-      background: rgba(2, 132, 199, 0.28);
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+      background: rgba(2, 132, 199, 0.35);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
     }
 
-    .btn-name {
-      font-size: 16px;
-      font-weight: 700;
-    }
+    .city-name { font-size: 16px; font-weight: 700; }
+    .city-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .side-temp { font-size: 20px; font-weight: 800; color: #38bdf8; }
 
-    .btn-desc {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-top: 4px;
-    }
-
-    /* Основной экран */
-    .main-content {
+    /* Центральное табло */
+    .main-board {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .detail-card {
       background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 24px;
-      padding: 20px;
+      padding: 28px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    }
-
-    .detail-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-      padding-bottom: 12px;
-    }
-
-    .detail-city { font-size: 24px; font-weight: 700; }
-    .detail-time-tag { font-size: 13px; color: #38bdf8; font-weight: 600; }
-
-    .city-view { display: none; }
-    .city-view.active { display: block; }
-
-    /* Карточки датчиков */
-    .sensor-item {
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 18px;
-      padding: 16px;
-      margin-bottom: 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      justify-content: space-between;
+      min-height: 320px;
     }
 
-    .sensor-top {
+    .board-top {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
     }
 
-    .sensor-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: #f8fafc;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .badge-home {
-      color: #4ade80;
-      background: rgba(34, 197, 94, 0.2);
-      border: 1px solid rgba(34, 197, 94, 0.4);
-      padding: 2px 8px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 11px;
-    }
-
-    .informer-box {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 14px;
-      padding: 12px;
-      min-height: 80px;
-    }
-
-    .informer-img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
-
-    .btn-chart {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px 16px;
-      background: rgba(2, 132, 199, 0.3);
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      color: #38bdf8;
-      text-decoration: none;
-      border-radius: 12px;
+    .board-city { font-size: 28px; font-weight: 800; }
+    .board-region { font-size: 14px; color: #94a3b8; margin-top: 4px; }
+    .board-time {
       font-size: 13px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      padding: 4px 10px;
+      border-radius: 12px;
       font-weight: 600;
-      transition: all 0.2s;
     }
 
-    .btn-chart:hover {
-      background: #0284c7;
-      color: #ffffff;
+    .board-center {
+      margin: 24px 0;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+
+    .big-degrees {
+      font-size: 64px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .weather-condition {
+      font-size: 20px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .board-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 14px;
+      font-size: 13px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
     }
 
     @media (max-width: 768px) {
       .layout { flex-direction: column; }
       .sidebar { flex: none; width: 100%; }
-      .detail-card { padding: 16px; }
+      .main-board { padding: 20px; min-height: auto; }
+      .big-degrees { font-size: 52px; }
     }
   </style>
 </head>
@@ -208,175 +159,173 @@
   <div class="overlay"></div>
 
   <div class="layout">
-    <!-- БОКОВОЕ МЕНЮ -->
+    <!-- Боковой список городов -->
     <div class="sidebar">
-      <div class="side-title">Выбор города</div>
+      <div class="side-title">Города</div>
 
-      <div class="city-card-btn active" onclick="switchCity('yugorsk', this)">
-        <div class="btn-name">Югорск</div>
-        <div class="btn-desc">D680 • D3489</div>
+      <div class="city-btn active" onclick="pickCity('yugorsk', this)">
+        <div>
+          <div class="city-name">Югорск</div>
+          <div class="city-sub">ХМАО — Югра</div>
+        </div>
+        <div class="side-temp" id="side-yugorsk">--°</div>
       </div>
 
-      <div class="city-card-btn" onclick="switchCity('ekb', this)">
-        <div class="btn-name">Екатеринбург</div>
-        <div class="btn-desc">D6911 • D6637 • D7062</div>
+      <div class="city-btn" onclick="pickCity('ekb', this)">
+        <div>
+          <div class="city-name">Екатеринбург</div>
+          <div class="city-sub">Урал</div>
+        </div>
+        <div class="side-temp" id="side-ekb">--°</div>
       </div>
 
-      <div class="city-card-btn" onclick="switchCity('nnov', this)">
-        <div class="btn-name">Н. Новгород / Бор</div>
-        <div class="btn-desc">D11347 • D8590</div>
+      <div class="city-btn" onclick="pickCity('nnov', this)">
+        <div>
+          <div class="city-name">Н. Новгород</div>
+          <div class="city-sub">Волга • Бор</div>
+        </div>
+        <div class="side-temp" id="side-nnov">--°</div>
       </div>
 
-      <div class="city-card-btn" onclick="switchCity('msk', this)">
-        <div class="btn-name">Москва</div>
-        <div class="btn-desc">D2852 • D8628 • D10305</div>
+      <div class="city-btn" onclick="pickCity('msk', this)">
+        <div>
+          <div class="city-name">Москва</div>
+          <div class="city-sub">Центр</div>
+        </div>
+        <div class="side-temp" id="side-msk">--°</div>
       </div>
     </div>
 
-    <!-- ОСНОВНОЙ ЭКРАН -->
-    <div class="main-content">
-      <div class="detail-card">
-        <div class="detail-header">
-          <div class="detail-city" id="activeCityTitle">Югорск • ХМАО</div>
-          <div class="detail-time-tag" id="dayNightStatus">Режим: День ☀️</div>
+    <!-- Центральное главное табло -->
+    <div class="main-board">
+      <div class="board-top">
+        <div>
+          <div class="board-city" id="mainCityName">Югорск</div>
+          <div class="board-region" id="mainCityRegion">Ханты-Мансийский автономный округ</div>
         </div>
+        <div class="board-time" id="dayNightBadge">Режим: День ☀️</div>
+      </div>
 
-        <!-- 1. ЮГОРСК -->
-        <div id="view-yugorsk" class="city-view active">
-          <div class="sensor-item">
-            <div class="sensor-top">
-              <div class="sensor-title">
-                📍 Мой термометр (D680)
-                <span class="badge-home">Основной</span>
-              </div>
-            </div>
-            <div class="informer-box">
-              <img class="informer-img" src="https://narodmon.ru/informer/D680.png" alt="Показания D680">
-            </div>
-            <a href="https://narodmon.ru/D680" target="_blank" class="btn-chart">
-              📊 Открыть график и историю датчика на Народмоне ↗
-            </a>
-          </div>
+      <div class="board-center">
+        <div class="big-degrees" id="mainDegree">--°</div>
+        <div class="weather-condition" id="mainCondition">Загрузка...</div>
+      </div>
 
-          <div class="sensor-item">
-            <div class="sensor-top">
-              <div class="sensor-title">📍 Городской резервный (D3489)</div>
-            </div>
-            <div class="informer-box">
-              <img class="informer-img" src="https://narodmon.ru/informer/D3489.png" alt="Показания D3489">
-            </div>
-            <a href="https://narodmon.ru/D3489" target="_blank" class="btn-chart">
-              📊 Открыть график и историю датчика на Народмоне ↗
-            </a>
-          </div>
-        </div>
-
-        <!-- 2. ЕКАТЕРИНБУРГ -->
-        <div id="view-ekb" class="city-view">
-          <div class="sensor-item">
-            <div class="sensor-top"><div class="sensor-title">📍 Датчик D6911</div></div>
-            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D6911.png" alt="D6911"></div>
-            <a href="https://narodmon.ru/D6911" target="_blank" class="btn-chart">📊 График D6911 на Народмоне ↗</a>
-          </div>
-          <div class="sensor-item">
-            <div class="sensor-top"><div class="sensor-title">📍 Датчик D6637</div></div>
-            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D6637.png" alt="D6637"></div>
-            <a href="https://narodmon.ru/D6637" target="_blank" class="btn-chart">📊 График D6637 на Народмоне ↗</a>
-          </div>
-          <div class="sensor-item">
-            <div class="sensor-top"><div class="sensor-title">📍 Датчик D7062</div></div>
-            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D7062.png" alt="D7062"></div>
-            <a href="https://narodmon.ru/D7062" target="_blank" class="btn-chart">📊 График D7062 на Народмоне ↗</a>
-          </div>
-        </div>
-
-        <!-- 3. НИЖНИЙ НОВГОРОД (БОР) -->
-        <div id="view-nnov" class="city-view">
-          <div class="sensor-item">
-            <div class="sensor-top"><div class="sensor-title">📍 Датчик D11347</div></div>
-            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D11347.png" alt="D11347"></div>
-            <a href="https://narodmon.ru/D11347" target="_blank" class="btn-chart">📊 График D11347 на Народмоне ↗</a>
-          </div>
-          <div class="sensor-item">
-            <div class="sensor-top"><div class="sensor-title">📍 Датчик D8590</div></div>
-            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D8590.png" alt="D8590"></div>
-            <a href="https://narodmon.ru/D8590" target="_blank" class="btn-chart">📊 График D8590 на Народмоне ↗</a>
-          </div>
-        </div>
-
-        <!-- 4. МОСКВА (ЦЕНТР) -->
-        <div id="view-msk" class="city-view">
-          <div class="sensor-item">
-            <div class="sensor-top"><div class="sensor-title">📍 Датчик D2852</div></div>
-            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D2852.png" alt="D2852"></div>
-            <a href="https://narodmon.ru/D2852" target="_blank" class="btn-chart">📊 График D2852 на Народмоне ↗</a>
-          </div>
-          <div class="sensor-item">
-            <div class="sensor-top"><div class="sensor-title">📍 Датчик D8628</div></div>
-            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D8628.png" alt="D8628"></div>
-            <a href="https://narodmon.ru/D8628" target="_blank" class="btn-chart">📊 График D8628 на Народмоне ↗</a>
-          </div>
-          <div class="sensor-item">
-            <div class="sensor-top"><div class="sensor-title">📍 Датчик D10305</div></div>
-            <div class="informer-box"><img class="informer-img" src="https://narodmon.ru/informer/D10305.png" alt="D10305"></div>
-            <a href="https://narodmon.ru/D10305" target="_blank" class="btn-chart">📊 График D10305 на Народмоне ↗</a>
-          </div>
-        </div>
-
+      <div class="board-bottom">
+        <span>Данные в реальном времени</span>
+        <span id="updateTime">Обновлено только что</span>
       </div>
     </div>
   </div>
 
   <script>
-    const cityThemes = {
+    const cities = {
       yugorsk: {
-        title: "Югорск • ХМАО",
+        name: "Югорск",
+        region: "Ханты-Мансийский автономный округ",
+        lat: 61.3123, lon: 63.3317,
         dayBg: "https://images.unsplash.com/photo-1517824806704-9040b037703b?q=80&w=1600&auto=format&fit=crop",
         nightBg: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop"
       },
       ekb: {
-        title: "Екатеринбург • Урал",
+        name: "Екатеринбург",
+        region: "Свердловская область",
+        lat: 56.8389, lon: 60.6057,
         dayBg: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1600&auto=format&fit=crop",
         nightBg: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1600&auto=format&fit=crop"
       },
       nnov: {
-        title: "Нижний Новгород (Бор) • Волга",
+        name: "Нижний Новгород / Бор",
+        region: "Нижегородская область",
+        lat: 56.3269, lon: 44.0059,
         dayBg: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop",
         nightBg: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1600&auto=format&fit=crop"
       },
       msk: {
-        title: "Москва • Центр",
+        name: "Москва",
+        region: "Центральный федеральный округ",
+        lat: 55.7558, lon: 37.6173,
         dayBg: "https://images.unsplash.com/photo-1513326738677-b964603b136d?q=80&w=1600&auto=format&fit=crop",
         nightBg: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1600&auto=format&fit=crop"
       }
     };
 
-    function isNightTime() {
-      const hour = new Date().getHours();
-      return (hour >= 21 || hour < 6);
+    let activeKey = 'yugorsk';
+    let dataCache = {};
+
+    function isNight() {
+      const h = new Date().getHours();
+      return (h >= 21 || h < 6);
     }
 
-    function applyCityVisuals(cityKey) {
-      const isNight = isNightTime();
-      const theme = cityThemes[cityKey];
-      const bgUrl = isNight ? theme.nightBg : theme.dayBg;
+    function weatherCodeToText(code) {
+      if (code === 0) return "Ясно ☀️";
+      if (code <= 2) return "Переменная облачность ⛅";
+      if (code === 3) return "Пасмурно ☁️";
+      if (code >= 45 && code <= 48) return "Туман 🌫️";
+      if (code >= 51 && code <= 67) return "Дождь 🌧️";
+      if (code >= 71 && code <= 77) return "Снегопад ❄️";
+      if (code >= 80 && code <= 82) return "Ливень 🌧️";
+      if (code >= 85 && code <= 86) return "Метель 🌨️";
+      if (code >= 95) return "Гроза ⚡";
+      return "Облачно ☁️";
+    }
+
+    function updateMainDisplay(cityKey) {
+      const city = cities[cityKey];
+      const night = isNight();
       
-      document.body.style.backgroundImage = `url('${bgUrl}')`;
-      document.getElementById('activeCityTitle').innerText = theme.title;
-      document.getElementById('dayNightStatus').innerText = isNight ? 'Режим: Ночь 🌙' : 'Режим: День ☀️';
+      document.body.style.backgroundImage = `url('${night ? city.nightBg : city.dayBg}')`;
+      document.getElementById('mainCityName').innerText = city.name;
+      document.getElementById('mainCityRegion').innerText = city.region;
+      document.getElementById('dayNightBadge').innerText = night ? 'Режим: Ночь 🌙' : 'Режим: День ☀️';
+
+      if (dataCache[cityKey]) {
+        document.getElementById('mainDegree').innerText = dataCache[cityKey].temp;
+        document.getElementById('mainCondition').innerText = dataCache[cityKey].cond;
+      }
     }
 
-    function switchCity(cityKey, btnElement) {
-      document.querySelectorAll('.city-card-btn').forEach(btn => btn.classList.remove('active'));
-      btnElement.classList.add('active');
-
-      document.querySelectorAll('.city-view').forEach(view => view.classList.remove('active'));
-      document.getElementById('view-' + cityKey).classList.add('active');
-
-      applyCityVisuals(cityKey);
+    function pickCity(cityKey, el) {
+      activeKey = cityKey;
+      document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      updateMainDisplay(cityKey);
     }
 
-    applyCityVisuals('yugorsk');
+    async function fetchWeather(cityKey) {
+      const c = cities[cityKey];
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,weather_code`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const t = Math.round(data.current.temperature_2m);
+        const sign = t > 0 ? '+' : '';
+        const tempText = `${sign}${t}°`;
+        const condText = weatherCodeToText(data.current.weather_code);
+
+        dataCache[cityKey] = { temp: tempText, cond: condText };
+
+        const sideEl = document.getElementById('side-' + cityKey);
+        if (sideEl) sideEl.innerText = tempText;
+
+        if (cityKey === activeKey) {
+          document.getElementById('mainDegree').innerText = tempText;
+          document.getElementById('mainCondition').innerText = condText;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function init() {
+      updateMainDisplay('yugorsk');
+      for (const k of Object.keys(cities)) {
+        await fetchWeather(k);
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
