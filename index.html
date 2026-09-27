@@ -53,6 +53,7 @@
       justify-content: space-between;
       align-items: center;
       color: #fff;
+      transition: all 0.2s ease;
     }
 
     .city-btn.active {
@@ -91,6 +92,7 @@
       background: rgba(56, 189, 248, 0.15);
       padding: 4px 10px;
       border-radius: 10px;
+      font-weight: 600;
     }
 
     .board-center {
@@ -169,29 +171,29 @@
 
       <div class="board-center">
         <div class="big-degrees" id="mainDegree">...</div>
-        <div class="weather-condition" id="mainCondition">Связь со спутником...</div>
+        <div class="weather-condition" id="mainCondition">Получение данных...</div>
       </div>
 
       <div class="board-bottom">
-        <span>Обновление онлайн</span>
+        <span>Фактическая температура</span>
         <span id="updateTime">Реальное время</span>
       </div>
     </div>
   </div>
 
   <script>
-    var cities = {
+    const cities = {
       yugorsk: { name: "Югорск", region: "ХМАО — Югра", lat: 61.3123, lon: 63.3317, bgDay: "https://images.unsplash.com/photo-1517824806704-9040b037703b?w=1200", bgNight: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200" },
       ekb: { name: "Екатеринбург", region: "Свердловская область", lat: 56.8389, lon: 60.6057, bgDay: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200", bgNight: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200" },
       nnov: { name: "Нижний Новгород / Бор", region: "Нижегородская область", lat: 56.3269, lon: 44.0059, bgDay: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", bgNight: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200" },
       msk: { name: "Москва", region: "Центр", lat: 55.7558, lon: 37.6173, bgDay: "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=1200", bgNight: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200" }
     };
 
-    var activeKey = 'yugorsk';
-    var dataCache = {};
+    let activeKey = 'yugorsk';
+    let dataCache = {};
 
     function isNight() {
-      var h = new Date().getHours();
+      const h = new Date().getHours();
       return (h >= 21 || h < 6);
     }
 
@@ -207,8 +209,8 @@
     }
 
     function updateMainDisplay(cityKey) {
-      var c = cities[cityKey];
-      var night = isNight();
+      const c = cities[cityKey];
+      const night = isNight();
       document.body.style.backgroundImage = 'url("' + (night ? c.bgNight : c.bgDay) + '")';
       document.getElementById('mainCityName').innerText = c.name;
       document.getElementById('mainCityRegion').innerText = c.region;
@@ -222,75 +224,45 @@
 
     function pickCity(cityKey, el) {
       activeKey = cityKey;
-      var btns = document.querySelectorAll('.city-btn');
-      for (var i = 0; i < btns.length; i++) {
-        btns[i].classList.remove('active');
-      }
+      document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
       el.classList.add('active');
       updateMainDisplay(cityKey);
     }
 
-    function applyCityWeather(cityKey, tempNum, weatherCode) {
-      var sign = tempNum > 0 ? '+' : '';
-      var tempText = sign + tempNum + '°';
-      var condText = weatherCodeToText(weatherCode);
+    function loadRealWeather(cityKey) {
+      const c = cities[cityKey];
+      // Прямой запрос к надежному шлюзу погоды
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,weather_code&timezone=auto`;
 
-      dataCache[cityKey] = { temp: tempText, cond: condText };
+      fetch(url)
+        .then(res => res.json())
+        .then(d => {
+          if (d && d.current) {
+            const t = Math.round(d.current.temperature_2m);
+            const sign = t > 0 ? '+' : '';
+            const tempStr = sign + t + '°';
+            const condStr = weatherCodeToText(d.current.weather_code);
 
-      var sideEl = document.getElementById('side-' + cityKey);
-      if (sideEl) sideEl.innerText = tempText;
+            dataCache[cityKey] = { temp: tempStr, cond: condStr };
 
-      if (cityKey === activeKey) {
-        document.getElementById('mainDegree').innerText = tempText;
-        document.getElementById('mainCondition').innerText = condText;
-      }
-    }
+            const sideEl = document.getElementById('side-' + cityKey);
+            if (sideEl) sideEl.innerText = tempStr;
 
-    // Универсальная загрузка через JSONP (не блокируется браузерами)
-    window.onWeatherLoad = function(cityKey, data) {
-      if (data && data.current) {
-        var t = Math.round(data.current.temperature_2m);
-        applyCityWeather(cityKey, t, data.current.weather_code);
-      }
-    };
-
-    function requestWeather(cityKey) {
-      var c = cities[cityKey];
-      // Запасной таймер: если через 4 секунды ничего не ответит, подставим примерную температуру
-      setTimeout(function() {
-        if (!dataCache[cityKey]) {
-          var approx = { yugorsk: 12, ekb: 14, nnov: 15, msk: 16 };
-          applyCityWeather(cityKey, approx[cityKey], 2);
-        }
-      }, 3500);
-
-      var script = document.createElement('script');
-      script.src = 'https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon + '&current=temperature_2m,weather_code&format=json';
-      
-      // Выполняем обычный HTTP-запрос через проверенный шлюз
-      fetch(script.src)
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-          window.onWeatherLoad(cityKey, data);
+            if (cityKey === activeKey) {
+              document.getElementById('mainDegree').innerText = tempStr;
+              document.getElementById('mainCondition').innerText = condStr;
+            }
+          }
         })
-        .catch(function() {
-          // Второй независимый канал: wttr
-          var img = new Image();
-          fetch('https://wttr.in/' + encodeURIComponent(c.name) + '?format=%t')
-            .then(function(r) { return r.text(); })
-            .then(function(txt) {
-              var val = parseInt(txt.replace(/[^0-9\-+]/g, ''), 10);
-              if (!isNaN(val)) {
-                applyCityWeather(cityKey, val, 1);
-              }
-            });
+        .catch(err => {
+          console.error("Ошибка сети для " + cityKey, err);
         });
     }
 
     function init() {
       updateMainDisplay('yugorsk');
-      for (var k in cities) {
-        requestWeather(k);
+      for (const k in cities) {
+        loadRealWeather(k);
       }
     }
 
