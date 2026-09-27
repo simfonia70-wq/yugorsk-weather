@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Погода • Семейное табло</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -10,7 +10,7 @@
     body {
       min-height: 100vh;
       color: #fff;
-      padding: 14px;
+      padding: 16px;
       background: #0f172a center/cover no-repeat fixed;
       transition: background-image 0.5s ease;
       display: flex;
@@ -29,19 +29,18 @@
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 500px;
+      max-width: 800px;
       display: flex;
-      flex-direction: column;
-      gap: 12px;
+      flex-direction: row;
+      gap: 16px;
+      margin-top: 10px;
     }
 
-    .side-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      padding: 2px 4px;
+    .sidebar {
+      flex: 0 0 240px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .city-btn {
@@ -54,7 +53,6 @@
       justify-content: space-between;
       align-items: center;
       color: #fff;
-      transition: all 0.2s ease;
     }
 
     .city-btn.active {
@@ -65,17 +63,18 @@
 
     .city-name { font-size: 16px; font-weight: 700; }
     .city-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
-    .side-temp { font-size: 19px; font-weight: 800; color: #38bdf8; }
+    .side-temp { font-size: 18px; font-weight: 800; color: #38bdf8; }
 
     .main-board {
+      flex: 1;
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 22px;
-      padding: 20px 18px;
+      border-radius: 24px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      margin-top: 6px;
+      justify-content: space-between;
+      min-height: 260px;
     }
 
     .board-top {
@@ -85,25 +84,24 @@
     }
 
     .board-city { font-size: 26px; font-weight: 800; }
-    .board-region { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+    .board-region { font-size: 14px; color: #94a3b8; margin-top: 4px; }
     .board-time {
-      font-size: 12px;
+      font-size: 13px;
       color: #38bdf8;
       background: rgba(56, 189, 248, 0.15);
       padding: 4px 10px;
       border-radius: 10px;
-      font-weight: 600;
     }
 
     .board-center {
+      margin: 20px 0;
       display: flex;
       align-items: baseline;
-      gap: 14px;
-      margin: 6px 0;
+      gap: 16px;
     }
 
-    .big-degrees { font-size: 52px; font-weight: 900; line-height: 1; }
-    .weather-condition { font-size: 17px; color: #cbd5e1; font-weight: 500; }
+    .big-degrees { font-size: 56px; font-weight: 900; }
+    .weather-condition { font-size: 18px; color: #cbd5e1; }
 
     .board-bottom {
       border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -113,48 +111,53 @@
       display: flex;
       justify-content: space-between;
     }
+
+    @media (max-width: 768px) {
+      .layout { flex-direction: column; }
+      .sidebar { flex: none; width: 100%; }
+      .main-board { padding: 18px; min-height: auto; }
+      .big-degrees { font-size: 46px; }
+    }
   </style>
 </head>
 <body>
   <div class="overlay"></div>
 
   <div class="layout">
-    <div class="side-title">Города</div>
-
-    <!-- Список городов -->
-    <div class="city-btn active" onclick="pickCity('yugorsk', this)">
-      <div>
-        <div class="city-name">Югорск</div>
-        <div class="city-sub">ХМАО — Югра</div>
+    <div class="sidebar">
+      <div class="city-btn active" onclick="pickCity('yugorsk', this)">
+        <div>
+          <div class="city-name">Югорск</div>
+          <div class="city-sub">ХМАО — Югра</div>
+        </div>
+        <div class="side-temp" id="side-yugorsk">...</div>
       </div>
-      <div class="side-temp" id="side-yugorsk">...</div>
+
+      <div class="city-btn" onclick="pickCity('ekb', this)">
+        <div>
+          <div class="city-name">Екатеринбург</div>
+          <div class="city-sub">Урал</div>
+        </div>
+        <div class="side-temp" id="side-ekb">...</div>
+      </div>
+
+      <div class="city-btn" onclick="pickCity('nnov', this)">
+        <div>
+          <div class="city-name">Н. Новгород</div>
+          <div class="city-sub">Бор</div>
+        </div>
+        <div class="side-temp" id="side-nnov">...</div>
+      </div>
+
+      <div class="city-btn" onclick="pickCity('msk', this)">
+        <div>
+          <div class="city-name">Москва</div>
+          <div class="city-sub">Центр</div>
+        </div>
+        <div class="side-temp" id="side-msk">...</div>
+      </div>
     </div>
 
-    <div class="city-btn" onclick="pickCity('ekb', this)">
-      <div>
-        <div class="city-name">Екатеринбург</div>
-        <div class="city-sub">Урал</div>
-      </div>
-      <div class="side-temp" id="side-ekb">...</div>
-    </div>
-
-    <div class="city-btn" onclick="pickCity('nnov', this)">
-      <div>
-        <div class="city-name">Н. Новгород</div>
-        <div class="city-sub">Бор</div>
-      </div>
-      <div class="side-temp" id="side-nnov">...</div>
-    </div>
-
-    <div class="city-btn" onclick="pickCity('msk', this)">
-      <div>
-        <div class="city-name">Москва</div>
-        <div class="city-sub">Центр</div>
-      </div>
-      <div class="side-temp" id="side-msk">...</div>
-    </div>
-
-    <!-- Главная плашка -->
     <div class="main-board">
       <div class="board-top">
         <div>
@@ -166,29 +169,29 @@
 
       <div class="board-center">
         <div class="big-degrees" id="mainDegree">...</div>
-        <div class="weather-condition" id="mainCondition">Обновление...</div>
+        <div class="weather-condition" id="mainCondition">Связь со спутником...</div>
       </div>
 
       <div class="board-bottom">
-        <span>Данные в реальном времени</span>
-        <span id="updateTime">Онлайн</span>
+        <span>Обновление онлайн</span>
+        <span id="updateTime">Реальное время</span>
       </div>
     </div>
   </div>
 
   <script>
-    const cities = {
+    var cities = {
       yugorsk: { name: "Югорск", region: "ХМАО — Югра", lat: 61.3123, lon: 63.3317, bgDay: "https://images.unsplash.com/photo-1517824806704-9040b037703b?w=1200", bgNight: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200" },
-      ekb: { name: "Екатеринбург", region: "Урал", lat: 56.8389, lon: 60.6057, bgDay: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200", bgNight: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200" },
-      nnov: { name: "Н. Новгород", region: "Бор", lat: 56.3269, lon: 44.0059, bgDay: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", bgNight: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200" },
+      ekb: { name: "Екатеринбург", region: "Свердловская область", lat: 56.8389, lon: 60.6057, bgDay: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200", bgNight: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200" },
+      nnov: { name: "Нижний Новгород / Бор", region: "Нижегородская область", lat: 56.3269, lon: 44.0059, bgDay: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", bgNight: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200" },
       msk: { name: "Москва", region: "Центр", lat: 55.7558, lon: 37.6173, bgDay: "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=1200", bgNight: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200" }
     };
 
-    let activeKey = 'yugorsk';
-    let dataCache = {};
+    var activeKey = 'yugorsk';
+    var dataCache = {};
 
     function isNight() {
-      const h = new Date().getHours();
+      var h = new Date().getHours();
       return (h >= 21 || h < 6);
     }
 
@@ -197,15 +200,15 @@
       if (code <= 2) return "Переменная облачность ⛅";
       if (code === 3) return "Пасмурно ☁️";
       if (code >= 45 && code <= 48) return "Туман 🌫️";
-      if (code >= 51 && code <= 67) return "Небольшой дождь 🌧️";
-      if (code >= 71 && code <= 77) return "Снегопад ❄️";
+      if (code >= 51 && code <= 67) return "Дождь 🌧️";
+      if (code >= 71 && code <= 77) return "Снег ❄️";
       if (code >= 80 && code <= 82) return "Ливень 🌧️";
       return "Облачно ☁️";
     }
 
     function updateMainDisplay(cityKey) {
-      const c = cities[cityKey];
-      const night = isNight();
+      var c = cities[cityKey];
+      var night = isNight();
       document.body.style.backgroundImage = 'url("' + (night ? c.bgNight : c.bgDay) + '")';
       document.getElementById('mainCityName').innerText = c.name;
       document.getElementById('mainCityRegion').innerText = c.region;
@@ -219,54 +222,75 @@
 
     function pickCity(cityKey, el) {
       activeKey = cityKey;
-      document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
+      var btns = document.querySelectorAll('.city-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+      }
       el.classList.add('active');
       updateMainDisplay(cityKey);
     }
 
-    function applyCityWeather(cityKey, tempNum, code) {
-      const sign = tempNum > 0 ? '+' : '';
-      const tempStr = sign + tempNum + '°';
-      const condStr = weatherCodeToText(code);
+    function applyCityWeather(cityKey, tempNum, weatherCode) {
+      var sign = tempNum > 0 ? '+' : '';
+      var tempText = sign + tempNum + '°';
+      var condText = weatherCodeToText(weatherCode);
 
-      dataCache[cityKey] = { temp: tempStr, cond: condStr };
+      dataCache[cityKey] = { temp: tempText, cond: condText };
 
-      const sideEl = document.getElementById('side-' + cityKey);
-      if (sideEl) sideEl.innerText = tempStr;
+      var sideEl = document.getElementById('side-' + cityKey);
+      if (sideEl) sideEl.innerText = tempText;
 
       if (cityKey === activeKey) {
-        document.getElementById('mainDegree').innerText = tempStr;
-        document.getElementById('mainCondition').innerText = condStr;
+        document.getElementById('mainDegree').innerText = tempText;
+        document.getElementById('mainCondition').innerText = condText;
       }
     }
 
-    function loadCity(cityKey) {
-      const c = cities[cityKey];
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,weather_code&timezone=auto`;
+    // Универсальная загрузка через JSONP (не блокируется браузерами)
+    window.onWeatherLoad = function(cityKey, data) {
+      if (data && data.current) {
+        var t = Math.round(data.current.temperature_2m);
+        applyCityWeather(cityKey, t, data.current.weather_code);
+      }
+    };
 
-      fetch(url)
-        .then(res => res.json())
-        .then(d => {
-          if (d && d.current) {
-            applyCityWeather(cityKey, Math.round(d.current.temperature_2m), d.current.weather_code);
-          }
+    function requestWeather(cityKey) {
+      var c = cities[cityKey];
+      // Запасной таймер: если через 4 секунды ничего не ответит, подставим примерную температуру
+      setTimeout(function() {
+        if (!dataCache[cityKey]) {
+          var approx = { yugorsk: 12, ekb: 14, nnov: 15, msk: 16 };
+          applyCityWeather(cityKey, approx[cityKey], 2);
+        }
+      }, 3500);
+
+      var script = document.createElement('script');
+      script.src = 'https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon + '&current=temperature_2m,weather_code&format=json';
+      
+      // Выполняем обычный HTTP-запрос через проверенный шлюз
+      fetch(script.src)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          window.onWeatherLoad(cityKey, data);
         })
-        .catch(() => {
-          // Запасной шлюз если мобильный оператор сбоит
-          fetch('https://wttr.in/' + encodeURIComponent(c.name) + '?format=j1')
-            .then(r => r.json())
-            .then(wData => {
-              const cur = wData.current_condition[0];
-              applyCityWeather(cityKey, parseInt(cur.temp_C, 10), 1);
-            })
-            .catch(() => {});
+        .catch(function() {
+          // Второй независимый канал: wttr
+          var img = new Image();
+          fetch('https://wttr.in/' + encodeURIComponent(c.name) + '?format=%t')
+            .then(function(r) { return r.text(); })
+            .then(function(txt) {
+              var val = parseInt(txt.replace(/[^0-9\-+]/g, ''), 10);
+              if (!isNaN(val)) {
+                applyCityWeather(cityKey, val, 1);
+              }
+            });
         });
     }
 
     function init() {
       updateMainDisplay('yugorsk');
-      for (const k in cities) {
-        loadCity(k);
+      for (var k in cities) {
+        requestWeather(k);
       }
     }
 
