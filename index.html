@@ -14,16 +14,16 @@
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
-      transition: background-image 0.6s ease-in-out;
+      transition: background-image 0.5s ease-in-out;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
     }
 
     .overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(11, 17, 33, 0.78);
+      background: rgba(11, 17, 33, 0.82);
       z-index: 0;
     }
 
@@ -35,11 +35,11 @@
       display: flex;
       flex-direction: row;
       gap: 16px;
+      margin-top: 10px;
     }
 
-    /* Боковая панель со списком городов */
     .sidebar {
-      flex: 0 0 260px;
+      flex: 0 0 250px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -71,7 +71,6 @@
 
     .city-btn:hover {
       background: rgba(255, 255, 255, 0.14);
-      transform: translateY(-2px);
     }
 
     .city-btn.active {
@@ -84,7 +83,6 @@
     .city-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
     .side-temp { font-size: 20px; font-weight: 800; color: #38bdf8; }
 
-    /* Центральное табло */
     .main-board {
       flex: 1;
       background: rgba(255, 255, 255, 0.08);
@@ -92,12 +90,12 @@
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 24px;
-      padding: 28px;
+      padding: 24px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 320px;
+      min-height: 280px;
     }
 
     .board-top {
@@ -126,10 +124,9 @@
     }
 
     .big-degrees {
-      font-size: 64px;
+      font-size: 60px;
       font-weight: 900;
       line-height: 1;
-      letter-spacing: -1px;
     }
 
     .weather-condition {
@@ -151,7 +148,7 @@
       .layout { flex-direction: column; }
       .sidebar { flex: none; width: 100%; }
       .main-board { padding: 20px; min-height: auto; }
-      .big-degrees { font-size: 52px; }
+      .big-degrees { font-size: 48px; }
     }
   </style>
 </head>
@@ -159,7 +156,6 @@
   <div class="overlay"></div>
 
   <div class="layout">
-    <!-- Боковой список городов -->
     <div class="sidebar">
       <div class="side-title">Города</div>
 
@@ -168,7 +164,7 @@
           <div class="city-name">Югорск</div>
           <div class="city-sub">ХМАО — Югра</div>
         </div>
-        <div class="side-temp" id="side-yugorsk">--°</div>
+        <div class="side-temp" id="side-yugorsk">...</div>
       </div>
 
       <div class="city-btn" onclick="pickCity('ekb', this)">
@@ -176,7 +172,7 @@
           <div class="city-name">Екатеринбург</div>
           <div class="city-sub">Урал</div>
         </div>
-        <div class="side-temp" id="side-ekb">--°</div>
+        <div class="side-temp" id="side-ekb">...</div>
       </div>
 
       <div class="city-btn" onclick="pickCity('nnov', this)">
@@ -184,7 +180,7 @@
           <div class="city-name">Н. Новгород</div>
           <div class="city-sub">Волга • Бор</div>
         </div>
-        <div class="side-temp" id="side-nnov">--°</div>
+        <div class="side-temp" id="side-nnov">...</div>
       </div>
 
       <div class="city-btn" onclick="pickCity('msk', this)">
@@ -192,28 +188,27 @@
           <div class="city-name">Москва</div>
           <div class="city-sub">Центр</div>
         </div>
-        <div class="side-temp" id="side-msk">--°</div>
+        <div class="side-temp" id="side-msk">...</div>
       </div>
     </div>
 
-    <!-- Центральное главное табло -->
     <div class="main-board">
       <div class="board-top">
         <div>
           <div class="board-city" id="mainCityName">Югорск</div>
-          <div class="board-region" id="mainCityRegion">Ханты-Мансийский автономный округ</div>
+          <div class="board-region" id="mainCityRegion">ХМАО — Югра</div>
         </div>
         <div class="board-time" id="dayNightBadge">Режим: День ☀️</div>
       </div>
 
       <div class="board-center">
-        <div class="big-degrees" id="mainDegree">--°</div>
-        <div class="weather-condition" id="mainCondition">Загрузка...</div>
+        <div class="big-degrees" id="mainDegree">...</div>
+        <div class="weather-condition" id="mainCondition">Получение температуры...</div>
       </div>
 
       <div class="board-bottom">
-        <span>Данные в реальном времени</span>
-        <span id="updateTime">Обновлено только что</span>
+        <span>Обновление онлайн</span>
+        <span id="updateTime">Реальное время</span>
       </div>
     </div>
   </div>
@@ -222,7 +217,7 @@
     const cities = {
       yugorsk: {
         name: "Югорск",
-        region: "Ханты-Мансийский автономный округ",
+        region: "ХМАО — Югра",
         lat: 61.3123, lon: 63.3317,
         dayBg: "https://images.unsplash.com/photo-1517824806704-9040b037703b?q=80&w=1600&auto=format&fit=crop",
         nightBg: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop"
@@ -243,7 +238,7 @@
       },
       msk: {
         name: "Москва",
-        region: "Центральный федеральный округ",
+        region: "Центр",
         lat: 55.7558, lon: 37.6173,
         dayBg: "https://images.unsplash.com/photo-1513326738677-b964603b136d?q=80&w=1600&auto=format&fit=crop",
         nightBg: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1600&auto=format&fit=crop"
@@ -293,35 +288,58 @@
       updateMainDisplay(cityKey);
     }
 
-    async function fetchWeather(cityKey) {
+    function fetchCity(cityKey) {
       const c = cities[cityKey];
-      try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,weather_code`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const t = Math.round(data.current.temperature_2m);
-        const sign = t > 0 ? '+' : '';
-        const tempText = `${sign}${t}°`;
-        const condText = weatherCodeToText(data.current.weather_code);
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + c.lat + '&longitude=' + c.lon + '&current=temperature_2m,weather_code';
 
-        dataCache[cityKey] = { temp: tempText, cond: condText };
+      fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          const t = Math.round(data.current.temperature_2m);
+          const sign = t > 0 ? '+' : '';
+          const tempText = sign + t + '°';
+          const condText = weatherCodeToText(data.current.weather_code);
 
-        const sideEl = document.getElementById('side-' + cityKey);
-        if (sideEl) sideEl.innerText = tempText;
+          dataCache[cityKey] = { temp: tempText, cond: condText };
 
-        if (cityKey === activeKey) {
-          document.getElementById('mainDegree').innerText = tempText;
-          document.getElementById('mainCondition').innerText = condText;
-        }
-      } catch (err) {
-        console.error(err);
-      }
+          const sideEl = document.getElementById('side-' + cityKey);
+          if (sideEl) sideEl.innerText = tempText;
+
+          if (cityKey === activeKey) {
+            document.getElementById('mainDegree').innerText = tempText;
+            document.getElementById('mainCondition').innerText = condText;
+          }
+        })
+        .catch(function(err) {
+          // Если первый сервер не ответил, пробуем через запасной прокси wttr.in
+          fetch('https://wttr.in/' + encodeURIComponent(c.name) + '?format=j1')
+            .then(function(r) { return r.json(); })
+            .then(function(wData) {
+              const cur = wData.current_condition[0];
+              const t = parseInt(cur.temp_C, 10);
+              const sign = t > 0 ? '+' : '';
+              const tempText = sign + t + '°';
+              const condText = cur.lang_ru && cur.lang_ru[0] ? cur.lang_ru[0].value : cur.weatherDesc[0].value;
+
+              dataCache[cityKey] = { temp: tempText, cond: condText };
+              const sideEl = document.getElementById('side-' + cityKey);
+              if (sideEl) sideEl.innerText = tempText;
+              if (cityKey === activeKey) {
+                document.getElementById('mainDegree').innerText = tempText;
+                document.getElementById('mainCondition').innerText = condText;
+              }
+            })
+            .catch(function() {
+              const sideEl = document.getElementById('side-' + cityKey);
+              if (sideEl && sideEl.innerText === '...') sideEl.innerText = 'н/д';
+            });
+        });
     }
 
-    async function init() {
+    function init() {
       updateMainDisplay('yugorsk');
-      for (const k of Object.keys(cities)) {
-        await fetchWeather(k);
+      for (const k in cities) {
+        fetchCity(k);
       }
     }
 
