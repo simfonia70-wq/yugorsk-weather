@@ -11,7 +11,7 @@
       min-height: 100vh;
       color: #fff;
       padding: 16px;
-      background: #0f172a center/cover no-repeat fixed;
+      background: #0b1120 center/cover no-repeat fixed;
       transition: background-image 0.5s ease;
       display: flex;
       justify-content: center;
@@ -21,7 +21,7 @@
     .overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.85);
+      background: radial-gradient(circle at 50% 20%, rgba(15, 23, 42, 0.75), rgba(7, 11, 22, 0.92));
       z-index: 0;
     }
 
@@ -37,45 +37,71 @@
     }
 
     .sidebar {
-      flex: 0 0 240px;
+      flex: 0 0 260px;
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
     .city-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
       padding: 14px 16px;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
       color: #fff;
-      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+      transition: all 0.25s ease;
     }
 
     .city-btn.active {
       border-color: #38bdf8;
-      background: rgba(2, 132, 199, 0.35);
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+      background: rgba(14, 165, 233, 0.18);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
     }
 
     .city-name { font-size: 16px; font-weight: 700; }
     .city-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
-    .side-temp { font-size: 18px; font-weight: 800; color: #38bdf8; }
+    
+    .city-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .side-icon { font-size: 20px; }
+    .side-temp { font-size: 19px; font-weight: 800; color: #38bdf8; }
 
+    /* Главный дисплей с подсветкой и градиентом */
     .main-board {
       flex: 1;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 26px;
       padding: 24px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 260px;
+      min-height: 270px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Фоновое мягкое свечение внутри главного экрана */
+    .main-board::before {
+      content: "";
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.25), transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
     }
 
     .board-top {
@@ -84,41 +110,57 @@
       align-items: flex-start;
     }
 
-    .board-city { font-size: 26px; font-weight: 800; }
+    .board-city { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
     .board-region { font-size: 14px; color: #94a3b8; margin-top: 4px; }
-    .board-time {
+    
+    .board-badge {
       font-size: 13px;
       color: #38bdf8;
-      background: rgba(56, 189, 248, 0.15);
-      padding: 4px 10px;
-      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 5px 12px;
+      border-radius: 12px;
       font-weight: 600;
     }
 
     .board-center {
-      margin: 20px 0;
+      margin: 24px 0;
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 16px;
     }
 
-    .big-degrees { font-size: 56px; font-weight: 900; }
-    .weather-condition { font-size: 18px; color: #cbd5e1; }
+    .main-icon { font-size: 48px; line-height: 1; }
+    .big-degrees { font-size: 58px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+    .weather-condition { font-size: 19px; color: #e2e8f0; font-weight: 500; }
 
     .board-bottom {
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 14px;
       font-size: 12px;
       color: #94a3b8;
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
 
+    /* Мобильный вид: главный экран сверху, кнопки снизу */
     @media (max-width: 768px) {
-      .layout { flex-direction: column; }
-      .sidebar { flex: none; width: 100%; }
-      .main-board { padding: 18px; min-height: auto; }
-      .big-degrees { font-size: 46px; }
+      .layout { 
+        flex-direction: column; 
+      }
+      .main-board { 
+        order: 1; 
+        padding: 22px; 
+        min-height: auto; 
+      }
+      .sidebar { 
+        order: 2; 
+        flex: none; 
+        width: 100%; 
+      }
+      .big-degrees { font-size: 52px; }
+      .main-icon { font-size: 42px; }
     }
   </style>
 </head>
@@ -126,13 +168,17 @@
   <div class="overlay"></div>
 
   <div class="layout">
+    <!-- Список кнопок городов -->
     <div class="sidebar">
       <div class="city-btn active" onclick="pickCity('yugorsk', this)">
         <div>
           <div class="city-name">Югорск</div>
           <div class="city-sub">ХМАО — Югра</div>
         </div>
-        <div class="side-temp" id="side-yugorsk">...</div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-yugorsk">☁️</span>
+          <span class="side-temp" id="side-yugorsk">...</span>
+        </div>
       </div>
 
       <div class="city-btn" onclick="pickCity('ekb', this)">
@@ -140,7 +186,10 @@
           <div class="city-name">Екатеринбург</div>
           <div class="city-sub">Урал</div>
         </div>
-        <div class="side-temp" id="side-ekb">...</div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-ekb">☁️</span>
+          <span class="side-temp" id="side-ekb">...</span>
+        </div>
       </div>
 
       <div class="city-btn" onclick="pickCity('nnov', this)">
@@ -148,7 +197,10 @@
           <div class="city-name">Н. Новгород</div>
           <div class="city-sub">Бор</div>
         </div>
-        <div class="side-temp" id="side-nnov">...</div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-nnov">☁️</span>
+          <span class="side-temp" id="side-nnov">...</span>
+        </div>
       </div>
 
       <div class="city-btn" onclick="pickCity('msk', this)">
@@ -156,27 +208,34 @@
           <div class="city-name">Москва</div>
           <div class="city-sub">Центр</div>
         </div>
-        <div class="side-temp" id="side-msk">...</div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-msk">☁️</span>
+          <span class="side-temp" id="side-msk">...</span>
+        </div>
       </div>
     </div>
 
+    <!-- Главный экран -->
     <div class="main-board">
       <div class="board-top">
         <div>
           <div class="board-city" id="mainCityName">Югорск</div>
           <div class="board-region" id="mainCityRegion">ХМАО — Югра</div>
         </div>
-        <div class="board-time" id="dayNightBadge">День ☀️</div>
+        <div class="board-badge" id="timeOfDayBadge">Ночь 🌙</div>
       </div>
 
       <div class="board-center">
-        <div class="big-degrees" id="mainDegree">...</div>
-        <div class="weather-condition" id="mainCondition">Загрузка...</div>
+        <span class="main-icon" id="mainIcon">☁️</span>
+        <div>
+          <div class="big-degrees" id="mainDegree">...</div>
+          <div class="weather-condition" id="mainCondition">Загрузка...</div>
+        </div>
       </div>
 
       <div class="board-bottom">
-        <span>Обновление онлайн</span>
-        <span id="updateTime">Реальное время</span>
+        <span>Метеоданные онлайн</span>
+        <span id="updateTime">Загрузка...</span>
       </div>
     </div>
   </div>
@@ -197,15 +256,16 @@
       return (h >= 21 || h < 6);
     }
 
-    function weatherCodeToText(code) {
-      if (code === 0) return "Ясно ☀️";
-      if (code <= 2) return "Переменная облачность ⛅";
-      if (code === 3) return "Пасмурно ☁️";
-      if (code >= 45 && code <= 48) return "Туман 🌫️";
-      if (code >= 51 && code <= 67) return "Дождь 🌧️";
-      if (code >= 71 && code <= 77) return "Снег ❄️";
-      if (code >= 80 && code <= 82) return "Ливень 🌧️";
-      return "Облачно ☁️";
+    function parseWeather(code) {
+      var night = isNight();
+      if (code === 0) return { text: "Ясно", icon: night ? "🌙" : "☀️" };
+      if (code <= 2) return { text: "Переменная облачность", icon: night ? "☁️" : "⛅" };
+      if (code === 3) return { text: "Пасмурно", icon: "☁️" };
+      if (code >= 45 && code <= 48) return { text: "Туман", icon: "🌫️" };
+      if (code >= 51 && code <= 67) return { text: "Дождь", icon: "🌧️" };
+      if (code >= 71 && code <= 77) return { text: "Снег", icon: "❄️" };
+      if (code >= 80 && code <= 82) return { text: "Ливень", icon: "🌧️" };
+      return { text: "Облачно", icon: "☁️" };
     }
 
     function updateMainDisplay(cityKey) {
@@ -214,11 +274,12 @@
       document.body.style.backgroundImage = 'url("' + (night ? c.bgNight : c.bgDay) + '")';
       document.getElementById('mainCityName').innerText = c.name;
       document.getElementById('mainCityRegion').innerText = c.region;
-      document.getElementById('dayNightBadge').innerText = night ? 'Режим: Ночь 🌙' : 'Режим: День ☀️';
+      document.getElementById('timeOfDayBadge').innerText = night ? 'Ночь 🌙' : 'День ☀️';
 
       if (dataCache[cityKey]) {
         document.getElementById('mainDegree').innerText = dataCache[cityKey].temp;
-        document.getElementById('mainCondition').innerText = dataCache[cityKey].cond;
+        document.getElementById('mainCondition').innerText = dataCache[cityKey].text;
+        document.getElementById('mainIcon').innerText = dataCache[cityKey].icon;
       }
     }
 
@@ -235,16 +296,19 @@
     function applyCityWeather(cityKey, tempNum, weatherCode) {
       var sign = tempNum > 0 ? '+' : '';
       var tempText = sign + tempNum + '°';
-      var condText = weatherCodeToText(weatherCode);
+      var wInfo = parseWeather(weatherCode);
 
-      dataCache[cityKey] = { temp: tempText, cond: condText };
+      dataCache[cityKey] = { temp: tempText, text: wInfo.text, icon: wInfo.icon };
 
-      var sideEl = document.getElementById('side-' + cityKey);
-      if (sideEl) sideEl.innerText = tempText;
+      var sideTemp = document.getElementById('side-' + cityKey);
+      var sideIcon = document.getElementById('icon-' + cityKey);
+      if (sideTemp) sideTemp.innerText = tempText;
+      if (sideIcon) sideIcon.innerText = wInfo.icon;
 
       if (cityKey === activeKey) {
         document.getElementById('mainDegree').innerText = tempText;
-        document.getElementById('mainCondition').innerText = condText;
+        document.getElementById('mainCondition').innerText = wInfo.text;
+        document.getElementById('mainIcon').innerText = wInfo.icon;
       }
     }
 
@@ -258,7 +322,6 @@
                 applyCityWeather(k, json.cities[k].temp, json.cities[k].code);
               }
             }
-            // Выводим фактическое время обновления
             var now = new Date();
             var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             var updateEl = document.getElementById('updateTime');
@@ -268,14 +331,13 @@
           }
         })
         .catch(function(err) {
-          console.error("Не удалось прочитать weather.json", err);
+          console.error("Ошибка загрузки данных", err);
         });
     }
 
     function init() {
       updateMainDisplay('yugorsk');
       loadLocalWeather();
-      // Автоматическое фоновое обновление каждые 10 минут
       setInterval(loadLocalWeather, 10 * 60 * 1000);
     }
 
