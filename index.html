@@ -248,7 +248,6 @@
       }
     }
 
-    // Единственный локальный запрос к нашему собственному файлу
     function loadLocalWeather() {
       fetch('weather.json?t=' + Date.now())
         .then(function(res) { return res.json(); })
@@ -258,6 +257,13 @@
               if (cities[k]) {
                 applyCityWeather(k, json.cities[k].temp, json.cities[k].code);
               }
+            }
+            // Выводим фактическое время обновления
+            var now = new Date();
+            var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            var updateEl = document.getElementById('updateTime');
+            if (updateEl) {
+              updateEl.innerText = 'Обновлено в ' + timeStr;
             }
           }
         })
@@ -269,6 +275,8 @@
     function init() {
       updateMainDisplay('yugorsk');
       loadLocalWeather();
+      // Автоматическое фоновое обновление каждые 10 минут
+      setInterval(loadLocalWeather, 10 * 60 * 1000);
     }
 
     init();
