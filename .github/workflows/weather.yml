@@ -22,9 +22,8 @@ jobs:
           import urllib.request
           import json
           import datetime
-          import os
 
-          cities = {
+         cities = {
               'yugorsk': {'lat': 61.3123, 'lon': 63.3317},
               'ekb': {'lat': 56.8389, 'lon': 60.6057},
               'nolinsk': {'lat': 57.5572, 'lon': 49.9342},
@@ -40,9 +39,10 @@ jobs:
 
           for key, c in cities.items():
               url = (
-                  f'https://api.open-meteo.com/v1/forecast'
-                  f'?latitude={c[\"lat\"]}&longitude={c[\"lon\"]}'
-                  f'&current=temperature_2m,weather_code,is_day'
+                  f\"https://api.open-meteo.com/v1/forecast\"
+                  f\"?latitude={c['lat']}\"
+                  f\"&longitude={c['lon']}\"
+                  f\"&current=temperature_2m,weather_code\"
               )
 
               req = urllib.request.Request(
@@ -55,8 +55,7 @@ jobs:
 
               result['cities'][key] = {
                   'temp': round(data['current']['temperature_2m']),
-                  'code': data['current']['weather_code'],
-                  'is_day': data['current']['is_day']
+                  'code': data['current']['weather_code']
               }
 
           with open('weather.json', 'w', encoding='utf-8') as f:
@@ -72,7 +71,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Weather data has not changed."
           else
-            git commit -m "Update weather [skip ci]"
-            git pull --rebase
+            git commit -m "Update weather"
             git push
           fi
