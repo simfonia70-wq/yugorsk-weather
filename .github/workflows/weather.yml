@@ -1,76 +1,388 @@
-name: Update Weather Data
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Погода • Семейное табло</title>
 
-on:
-  schedule:
-    - cron: '*/15 * * * *'
-  workflow_dispatch:
+  <meta property="og:title" content="Погода • Семейное табло">
+  <meta property="og:description" content="Фактическая погода прямо сейчас: Югорск, Екатеринбург, Нолинск, Нижний Новгород, Москва, Нячанг.">
+  <meta property="og:type" content="website">
 
-permissions:
-  contents: write
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    
+    body {
+      min-height: 100vh;
+      color: #fff;
+      padding: 16px;
+      background: #0b1120 center/cover no-repeat fixed;
+      transition: background-image 0.5s ease;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
 
-jobs:
-  update-weather:
-    runs-on: ubuntu-latest
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at 50% 20%, rgba(15, 23, 42, 0.75), rgba(7, 11, 22, 0.92));
+      z-index: 0;
+    }
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    .layout {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      margin-top: 10px;
+    }
 
-      - name: Fetch Weather Data
-        run: |
-          python3 -c "
-          import urllib.request
-          import json
-          import datetime
+    .sidebar {
+      flex: 0 0 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-         cities = {
-              'yugorsk': {'lat': 61.3123, 'lon': 63.3317},
-              'ekb': {'lat': 56.8389, 'lon': 60.6057},
-              'nolinsk': {'lat': 57.5572, 'lon': 49.9342},
-              'nnov': {'lat': 56.3269, 'lon': 44.0059},
-              'msk': {'lat': 55.7558, 'lon': 37.6173},
-              'nhatrang': {'lat': 12.2388, 'lon': 109.1967}
-          }
+    .city-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: all 0.25s ease;
+    }
 
-          result = {
-              'updated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-              'cities': {}
-          }
+    .city-btn.active {
+      border-color: #38bdf8;
+      background: rgba(14, 165, 233, 0.18);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+    }
 
-          for key, c in cities.items():
-              url = (
-                  f\"https://api.open-meteo.com/v1/forecast\"
-                  f\"?latitude={c['lat']}\"
-                  f\"&longitude={c['lon']}\"
-                  f\"&current=temperature_2m,weather_code\"
-              )
+    .city-name { font-size: 16px; font-weight: 700; }
+    .city-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    
+    .city-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .side-icon { font-size: 20px; }
+    .side-temp { font-size: 19px; font-weight: 800; color: #38bdf8; }
 
-              req = urllib.request.Request(
-                  url,
-                  headers={'User-Agent': 'GitHub-Action-Weather'}
-              )
+    /* Главный дисплей */
+    .main-board {
+      flex: 1;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 26px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 270px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
 
-              with urllib.request.urlopen(req, timeout=30) as resp:
-                  data = json.loads(resp.read().decode())
+    .main-board::before {
+      content: "";
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.25), transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
 
-              result['cities'][key] = {
-                  'temp': round(data['current']['temperature_2m']),
-                  'code': data['current']['weather_code']
+    .board-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .board-city { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+    .board-region { font-size: 14px; color: #94a3b8; margin-top: 4px; }
+    
+    .board-badge {
+      font-size: 13px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 5px 12px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .board-center {
+      margin: 24px 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .main-icon { font-size: 48px; line-height: 1; }
+    .big-degrees { font-size: 58px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+    .weather-condition { font-size: 19px; color: #e2e8f0; font-weight: 500; }
+
+    .board-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 14px;
+      font-size: 12px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Мобильный вид */
+    @media (max-width: 768px) {
+      .layout { 
+        flex-direction: column; 
+      }
+      .main-board { 
+        order: 1; 
+        padding: 22px; 
+        min-height: auto; 
+      }
+      .sidebar { 
+        order: 2; 
+        flex: none; 
+        width: 100%; 
+      }
+      .big-degrees { font-size: 52px; }
+      .main-icon { font-size: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <div class="layout">
+    <!-- Список кнопок городов -->
+    <div class="sidebar">
+      <div class="city-btn active" onclick="pickCity('yugorsk', this)">
+        <div>
+          <div class="city-name">Югорск</div>
+          <div class="city-sub">ХМАО — Югра</div>
+        </div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-yugorsk">☁️</span>
+          <span class="side-temp" id="side-yugorsk">...</span>
+        </div>
+      </div>
+
+      <div class="city-btn" onclick="pickCity('ekb', this)">
+        <div>
+          <div class="city-name">Екатеринбург</div>
+          <div class="city-sub">Урал</div>
+        </div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-ekb">☁️</span>
+          <span class="side-temp" id="side-ekb">...</span>
+        </div>
+      </div>
+
+      <div class="city-btn" onclick="pickCity('nolinsk', this)">
+        <div>
+          <div class="city-name">Нолинск</div>
+          <div class="city-sub">Кировская область</div>
+        </div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-nolinsk">☁️</span>
+          <span class="side-temp" id="side-nolinsk">...</span>
+        </div>
+      </div>
+
+      <div class="city-btn" onclick="pickCity('nnov', this)">
+        <div>
+          <div class="city-name">Н. Новгород</div>
+          <div class="city-sub">Бор</div>
+        </div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-nnov">☁️</span>
+          <span class="side-temp" id="side-nnov">...</span>
+        </div>
+      </div>
+
+      <div class="city-btn" onclick="pickCity('msk', this)">
+        <div>
+          <div class="city-name">Москва</div>
+          <div class="city-sub">Центр</div>
+        </div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-msk">☁️</span>
+          <span class="side-temp" id="side-msk">...</span>
+        </div>
+      </div>
+
+      <!-- Вьетнам: Нячанг -->
+      <div class="city-btn" onclick="pickCity('nhatrang', this)">
+        <div>
+          <div class="city-name">Нячанг</div>
+          <div class="city-sub">Вьетнам • Курорт</div>
+        </div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-nhatrang">🌴</span>
+          <span class="side-temp" id="side-nhatrang">...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Главный экран -->
+    <div class="main-board">
+      <div class="board-top">
+        <div>
+          <div class="board-city" id="mainCityName">Югорск</div>
+          <div class="board-region" id="mainCityRegion">ХМАО — Югра</div>
+        </div>
+        <div class="board-badge" id="timeOfDayBadge">День ☀️</div>
+      </div>
+
+      <div class="board-center">
+        <span class="main-icon" id="mainIcon">☁️</span>
+        <div>
+          <div class="big-degrees" id="mainDegree">...</div>
+          <div class="weather-condition" id="mainCondition">Загрузка...</div>
+        </div>
+      </div>
+
+      <div class="board-bottom">
+        <span>Метеоданные онлайн</span>
+        <span id="updateTime">Загрузка...</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var cities = {
+      yugorsk: { name: "Югорск", region: "ХМАО — Югра", bgDay: "https://images.unsplash.com/photo-1517824806704-9040b037703b?w=1200", bgNight: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200" },
+      ekb: { name: "Екатеринбург", region: "Свердловская область", bgDay: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200", bgNight: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200" },
+      nolinsk: { name: "Нолинск", region: "Кировская область", bgDay: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200", bgNight: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200" },
+      nnov: { name: "Нижний Новгород / Бор", region: "Нижегородская область", bgDay: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", bgNight: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200" },
+      msk: { name: "Москва", region: "Центр", bgDay: "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=1200", bgNight: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200" },
+      nhatrang: { name: "Нячанг", region: "Вьетнам • Южно-Китайское море", bgDay: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200", bgNight: "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=1200" }
+    };
+
+    var activeKey = 'yugorsk';
+    var dataCache = {};
+
+    function parseWeather(code, isDay) {
+      var isNight = !isDay;
+      if (code === 0) return { text: "Ясно", icon: isNight ? "🌙" : "☀️" };
+      if (code <= 2) return { text: "Переменная облачность", icon: isNight ? "☁️" : "⛅" };
+      if (code === 3) return { text: "Пасмурно", icon: "☁️" };
+      if (code >= 45 && code <= 48) return { text: "Туман", icon: "🌫️" };
+      if (code >= 51 && code <= 67) return { text: "Дождь", icon: "🌧️" };
+      if (code >= 71 && code <= 77) return { text: "Снег", icon: "❄️" };
+      if (code >= 80 && code <= 82) return { text: "Ливень", icon: "🌧️" };
+      return { text: "Облачно", icon: "☁️" };
+    }
+
+    function updateMainDisplay(cityKey) {
+      var c = cities[cityKey];
+      var cached = dataCache[cityKey];
+      
+      var isDay = cached ? cached.isDay : (new Date().getHours() >= 6 && new Date().getHours() < 21);
+
+      document.body.style.backgroundImage = 'url("' + (isDay ? c.bgDay : c.bgNight) + '")';
+      document.getElementById('mainCityName').innerText = c.name;
+      document.getElementById('mainCityRegion').innerText = c.region;
+      document.getElementById('timeOfDayBadge').innerText = isDay ? 'День ☀️' : 'Ночь 🌙';
+
+      if (cached) {
+        document.getElementById('mainDegree').innerText = cached.temp;
+        document.getElementById('mainCondition').innerText = cached.text;
+        document.getElementById('mainIcon').innerText = cached.icon;
+      }
+    }
+
+    function pickCity(cityKey, el) {
+      activeKey = cityKey;
+      var btns = document.querySelectorAll('.city-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+      }
+      el.classList.add('active');
+      updateMainDisplay(cityKey);
+    }
+
+    function applyCityWeather(cityKey, tempNum, weatherCode, isDayVal) {
+      var isDay = (typeof isDayVal !== 'undefined') ? Boolean(isDayVal) : (new Date().getHours() >= 6 && new Date().getHours() < 21);
+      var sign = tempNum > 0 ? '+' : '';
+      var tempText = sign + tempNum + '°';
+      var wInfo = parseWeather(weatherCode, isDay);
+
+      dataCache[cityKey] = { 
+        temp: tempText, 
+        text: wInfo.text, 
+        icon: wInfo.icon,
+        isDay: isDay
+      };
+
+      var sideTemp = document.getElementById('side-' + cityKey);
+      var sideIcon = document.getElementById('icon-' + cityKey);
+      if (sideTemp) sideTemp.innerText = tempText;
+      if (sideIcon) sideIcon.innerText = wInfo.icon;
+
+      if (cityKey === activeKey) {
+        updateMainDisplay(cityKey);
+      }
+    }
+
+    function loadLocalWeather() {
+      fetch('weather.json?t=' + Date.now())
+        .then(function(res) { return res.json(); })
+        .then(function(json) {
+          if (json && json.cities) {
+            for (var k in json.cities) {
+              if (cities[k]) {
+                var cData = json.cities[k];
+                applyCityWeather(k, cData.temp, cData.code, cData.is_day);
               }
+            }
 
-          with open('weather.json', 'w', encoding='utf-8') as f:
-              json.dump(result, f, ensure_ascii=False, indent=2)
-          "
+            var updateEl = document.getElementById('updateTime');
+            if (updateEl) {
+              if (json.updated) {
+                var d = new Date(json.updated);
+                var timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                updateEl.innerText = 'Замер в ' + timeStr;
+              } else {
+                updateEl.innerText = 'Онлайн';
+              }
+            }
+          }
+        })
+        .catch(function(err) {
+          console.error("Ошибка загрузки данных", err);
+          var updateEl = document.getElementById('updateTime');
+          if (updateEl) updateEl.innerText = 'Автономный режим';
+        });
+    }
 
-      - name: Commit and push changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add weather.json
+    function init() {
+      updateMainDisplay('yugorsk');
+      loadLocalWeather();
+      setInterval(loadLocalWeather, 5 * 60 * 1000);
+    }
 
-          if git diff --cached --quiet; then
-            echo "Weather data has not changed."
-          else
-            git commit -m "Update weather"
-            git push
-          fi
+    init();
+  </script>
+</body>
+</html>
