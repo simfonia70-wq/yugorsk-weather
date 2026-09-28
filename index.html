@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Погода • Семейное табло</title>
+
+  <meta property="og:title" content="Погода • Семейное табло">
+  <meta property="og:description" content="Фактическая погода прямо сейчас: Югорск, Екатеринбург, Нолинск, Нижний Новгород, Москва.">
+  <meta property="og:type" content="website">
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     
@@ -54,6 +59,7 @@
       align-items: center;
       color: #fff;
       backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       transition: all 0.25s ease;
     }
 
@@ -74,7 +80,7 @@
     .side-icon { font-size: 20px; }
     .side-temp { font-size: 19px; font-weight: 800; color: #38bdf8; }
 
-    /* Главный дисплей с подсветкой и градиентом */
+    /* Главный дисплей */
     .main-board {
       flex: 1;
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%);
@@ -86,12 +92,12 @@
       justify-content: space-between;
       min-height: 270px;
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
       position: relative;
       overflow: hidden;
     }
 
-    /* Фоновое мягкое свечение внутри главного экрана */
     .main-board::before {
       content: "";
       position: absolute;
@@ -192,6 +198,17 @@
         </div>
       </div>
 
+      <div class="city-btn" onclick="pickCity('nolinsk', this)">
+        <div>
+          <div class="city-name">Нолинск</div>
+          <div class="city-sub">Кировская область</div>
+        </div>
+        <div class="city-right">
+          <span class="side-icon" id="icon-nolinsk">☁️</span>
+          <span class="side-temp" id="side-nolinsk">...</span>
+        </div>
+      </div>
+
       <div class="city-btn" onclick="pickCity('nnov', this)">
         <div>
           <div class="city-name">Н. Новгород</div>
@@ -222,7 +239,7 @@
           <div class="board-city" id="mainCityName">Югорск</div>
           <div class="board-region" id="mainCityRegion">ХМАО — Югра</div>
         </div>
-        <div class="board-badge" id="timeOfDayBadge">Ночь 🌙</div>
+        <div class="board-badge" id="timeOfDayBadge">День ☀️</div>
       </div>
 
       <div class="board-center">
@@ -244,6 +261,7 @@
     var cities = {
       yugorsk: { name: "Югорск", region: "ХМАО — Югра", bgDay: "https://images.unsplash.com/photo-1517824806704-9040b037703b?w=1200", bgNight: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200" },
       ekb: { name: "Екатеринбург", region: "Свердловская область", bgDay: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200", bgNight: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200" },
+      nolinsk: { name: "Нолинск", region: "Кировская область", bgDay: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200", bgNight: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200" },
       nnov: { name: "Нижний Новгород / Бор", region: "Нижегородская область", bgDay: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200", bgNight: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200" },
       msk: { name: "Москва", region: "Центр", bgDay: "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=1200", bgNight: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200" }
     };
@@ -251,15 +269,10 @@
     var activeKey = 'yugorsk';
     var dataCache = {};
 
-    function isNight() {
-      var h = new Date().getHours();
-      return (h >= 21 || h < 6);
-    }
-
-    function parseWeather(code) {
-      var night = isNight();
-      if (code === 0) return { text: "Ясно", icon: night ? "🌙" : "☀️" };
-      if (code <= 2) return { text: "Переменная облачность", icon: night ? "☁️" : "⛅" };
+    function parseWeather(code, isDay) {
+      var isNight = !isDay;
+      if (code === 0) return { text: "Ясно", icon: isNight ? "🌙" : "☀️" };
+      if (code <= 2) return { text: "Переменная облачность", icon: isNight ? "☁️" : "⛅" };
       if (code === 3) return { text: "Пасмурно", icon: "☁️" };
       if (code >= 45 && code <= 48) return { text: "Туман", icon: "🌫️" };
       if (code >= 51 && code <= 67) return { text: "Дождь", icon: "🌧️" };
@@ -270,16 +283,19 @@
 
     function updateMainDisplay(cityKey) {
       var c = cities[cityKey];
-      var night = isNight();
-      document.body.style.backgroundImage = 'url("' + (night ? c.bgNight : c.bgDay) + '")';
+      var cached = dataCache[cityKey];
+      
+      var isDay = cached ? cached.isDay : (new Date().getHours() >= 6 && new Date().getHours() < 21);
+
+      document.body.style.backgroundImage = 'url("' + (isDay ? c.bgDay : c.bgNight) + '")';
       document.getElementById('mainCityName').innerText = c.name;
       document.getElementById('mainCityRegion').innerText = c.region;
-      document.getElementById('timeOfDayBadge').innerText = night ? 'Ночь 🌙' : 'День ☀️';
+      document.getElementById('timeOfDayBadge').innerText = isDay ? 'День ☀️' : 'Ночь 🌙';
 
-      if (dataCache[cityKey]) {
-        document.getElementById('mainDegree').innerText = dataCache[cityKey].temp;
-        document.getElementById('mainCondition').innerText = dataCache[cityKey].text;
-        document.getElementById('mainIcon').innerText = dataCache[cityKey].icon;
+      if (cached) {
+        document.getElementById('mainDegree').innerText = cached.temp;
+        document.getElementById('mainCondition').innerText = cached.text;
+        document.getElementById('mainIcon').innerText = cached.icon;
       }
     }
 
@@ -293,12 +309,18 @@
       updateMainDisplay(cityKey);
     }
 
-    function applyCityWeather(cityKey, tempNum, weatherCode) {
+    function applyCityWeather(cityKey, tempNum, weatherCode, isDayVal) {
+      var isDay = (typeof isDayVal !== 'undefined') ? Boolean(isDayVal) : (new Date().getHours() >= 6 && new Date().getHours() < 21);
       var sign = tempNum > 0 ? '+' : '';
       var tempText = sign + tempNum + '°';
-      var wInfo = parseWeather(weatherCode);
+      var wInfo = parseWeather(weatherCode, isDay);
 
-      dataCache[cityKey] = { temp: tempText, text: wInfo.text, icon: wInfo.icon };
+      dataCache[cityKey] = { 
+        temp: tempText, 
+        text: wInfo.text, 
+        icon: wInfo.icon,
+        isDay: isDay
+      };
 
       var sideTemp = document.getElementById('side-' + cityKey);
       var sideIcon = document.getElementById('icon-' + cityKey);
@@ -306,9 +328,7 @@
       if (sideIcon) sideIcon.innerText = wInfo.icon;
 
       if (cityKey === activeKey) {
-        document.getElementById('mainDegree').innerText = tempText;
-        document.getElementById('mainCondition').innerText = wInfo.text;
-        document.getElementById('mainIcon').innerText = wInfo.icon;
+        updateMainDisplay(cityKey);
       }
     }
 
@@ -319,26 +339,34 @@
           if (json && json.cities) {
             for (var k in json.cities) {
               if (cities[k]) {
-                applyCityWeather(k, json.cities[k].temp, json.cities[k].code);
+                var cData = json.cities[k];
+                applyCityWeather(k, cData.temp, cData.code, cData.is_day);
               }
             }
-            var now = new Date();
-            var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
             var updateEl = document.getElementById('updateTime');
             if (updateEl) {
-              updateEl.innerText = 'Обновлено в ' + timeStr;
+              if (json.updated) {
+                var d = new Date(json.updated);
+                var timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                updateEl.innerText = 'Замер в ' + timeStr;
+              } else {
+                updateEl.innerText = 'Онлайн';
+              }
             }
           }
         })
         .catch(function(err) {
           console.error("Ошибка загрузки данных", err);
+          var updateEl = document.getElementById('updateTime');
+          if (updateEl) updateEl.innerText = 'Автономный режим';
         });
     }
 
     function init() {
       updateMainDisplay('yugorsk');
       loadLocalWeather();
-      setInterval(loadLocalWeather, 10 * 60 * 1000);
+      setInterval(loadLocalWeather, 5 * 60 * 1000);
     }
 
     init();
