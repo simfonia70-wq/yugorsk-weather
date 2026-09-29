@@ -1,4 +1,3 @@
-```yaml
 name: Update Weather Data
 
 on:
@@ -85,4 +84,3 @@ jobs:
             git commit -m "Update weather data"
             git push
           fi
-```
