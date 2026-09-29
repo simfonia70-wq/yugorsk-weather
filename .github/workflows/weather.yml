@@ -1,8 +1,9 @@
+```yaml
 name: Update Weather Data
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -18,59 +19,70 @@ jobs:
 
       - name: Fetch Weather Data
         run: |
-          python3 -c "
+          python3 <<'PY'
           import urllib.request
           import json
           import datetime
 
-         cities = {
-              'yugorsk': {'lat': 61.3123, 'lon': 63.3317},
-              'ekb': {'lat': 56.8389, 'lon': 60.6057},
-              'nolinsk': {'lat': 57.5572, 'lon': 49.9342},
-              'nnov': {'lat': 56.3269, 'lon': 44.0059},
-              'msk': {'lat': 55.7558, 'lon': 37.6173},
-              'nhatrang': {'lat': 12.2388, 'lon': 109.1967}
+          cities = {
+              "yugorsk": {"lat": 61.3123, "lon": 63.3317},
+              "ekb": {"lat": 56.8389, "lon": 60.6057},
+              "nolinsk": {"lat": 57.5572, "lon": 49.9342},
+              "nnov": {"lat": 56.3269, "lon": 44.0059},
+              "msk": {"lat": 55.7558, "lon": 37.6173}
           }
 
           result = {
-              'updated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-              'cities': {}
+              "updated": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              "cities": {}
           }
 
-          for key, c in cities.items():
+          for key, city in cities.items():
+
               url = (
-                  f\"https://api.open-meteo.com/v1/forecast\"
-                  f\"?latitude={c['lat']}\"
-                  f\"&longitude={c['lon']}\"
-                  f\"&current=temperature_2m,weather_code\"
+                  "https://api.open-meteo.com/v1/forecast"
+                  f"?latitude={city['lat']}"
+                  f"&longitude={city['lon']}"
+                  "&current=temperature_2m,weather_code,is_day"
+                  "&timezone=auto"
               )
 
-              req = urllib.request.Request(
+              request = urllib.request.Request(
                   url,
-                  headers={'User-Agent': 'GitHub-Action-Weather'}
+                  headers={
+                      "User-Agent": "GitHub-Action-Weather"
+                  }
               )
 
-              with urllib.request.urlopen(req, timeout=30) as resp:
-                  data = json.loads(resp.read().decode())
+              print(f"Получаем погоду: {key}")
 
-              result['cities'][key] = {
-                  'temp': round(data['current']['temperature_2m']),
-                  'code': data['current']['weather_code']
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  data = json.loads(response.read().decode("utf-8"))
+
+              result["cities"][key] = {
+                  "temp": round(data["current"]["temperature_2m"]),
+                  "code": data["current"]["weather_code"],
+                  "is_day": data["current"]["is_day"]
               }
 
-          with open('weather.json', 'w', encoding='utf-8') as f:
-              json.dump(result, f, ensure_ascii=False, indent=2)
-          "
+          with open("weather.json", "w", encoding="utf-8") as file:
+              json.dump(result, file, ensure_ascii=False, indent=2)
+
+          print("weather.json успешно создан")
+          print(json.dumps(result, ensure_ascii=False, indent=2))
+          PY
 
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add weather.json
 
           if git diff --cached --quiet; then
             echo "Weather data has not changed."
           else
-            git commit -m "Update weather"
+            git commit -m "Update weather data"
             git push
           fi
+```
