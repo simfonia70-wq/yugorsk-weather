@@ -1,8 +1,8 @@
 {
-  "updated": "2026-10-06T06:18:33.942328+00:00",
+  "updated": "2026-10-06T06:48:38.669331+00:00",
   "cities": {
     "yugorsk": {
-      "temp": 1,
+      "temp": 2,
       "code": 3,
       "is_day": 1
     },
@@ -12,12 +12,12 @@
       "is_day": 1
     },
     "nolinsk": {
-      "temp": 3,
+      "temp": 4,
       "code": 0,
       "is_day": 1
     },
     "nnov": {
-      "temp": 9,
+      "temp": 10,
       "code": 3,
       "is_day": 1
     },
